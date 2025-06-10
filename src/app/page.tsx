@@ -19,7 +19,7 @@ export default function Home() {
     const { error } = await supabase.from("products").insert({
       name,
       price: parseFloat(price),
-      stock: parseInt(stock),
+      total_stock: parseInt(stock),
       color: colorSelected,
       modal: parseFloat(modal),
     });
@@ -99,6 +99,7 @@ export default function Home() {
                   )
                 )}
               </div>
+              <h1>Tes</h1>
             </div>
 
             <div className="flex justify-between">

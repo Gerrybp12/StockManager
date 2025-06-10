@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Table,
   TableBody,
@@ -17,8 +17,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar } from "lucide-react";
-import { Product } from '@/types/product';
-import { formatCurrency, formatDate, getStockStatus, getProductColorHex, getProductColorDisplayName } from '@/utils/productUtils';
+import { Product } from "@/types/product";
+import {
+  formatCurrency,
+  formatDate,
+  getStockStatus,
+  getProductColorHex,
+  getProductColorDisplayName,
+} from "@/utils/productUtils";
 
 interface ProductsTableProps {
   products: Product[];
@@ -111,7 +117,9 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                           <div
                             className="w-4 h-4 rounded-full border border-gray-300"
                             style={{
-                              backgroundColor: getProductColorHex(product.color),
+                              backgroundColor: getProductColorHex(
+                                product.color
+                              ),
                             }}
                             title={getProductColorDisplayName(product.color)}
                           />
