@@ -4,7 +4,9 @@ export interface Product {
   id: number;
   name: string;
   price: number;
-  stock: number;
+  total_stock: number;
+  tiktok_stock: number;
+  shopee_stock: number;
   color: string;
   created_at: string;
 }

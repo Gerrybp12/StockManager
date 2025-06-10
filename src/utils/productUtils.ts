@@ -26,15 +26,32 @@ export const getStockStatus = (stock: number): StockStatus => {
   return { label: "In Stock", variant: "default" as const };
 };
 
+// Helper function to get stock status for total stock
+export const getTotalStockStatus = (product: Product): StockStatus => {
+  return getStockStatus(product.total_stock);
+};
+
+// Helper function to get stock display with color coding
+export const getStockDisplay = (stock: number): { value: number; className: string } => {
+  return {
+    value: stock,
+    className: stock === 0 
+      ? "text-red-600 font-medium" 
+      : stock < 10 
+        ? "text-yellow-600 font-medium" 
+        : "text-green-600 font-medium"
+  };
+};
+
 export const getUniqueColors = (products: Product[]): string[] => {
   return Array.from(new Set(products.map((p) => p.color)));
 };
 
 export const calculateProductStats = (products: Product[]) => {
   const totalProducts = products.length;
-  const totalValue = products.reduce((sum, p) => sum + p.price * p.stock, 0);
-  const lowStockCount = products.filter((p) => p.stock < 10).length;
-  const outOfStockCount = products.filter((p) => p.stock === 0).length;
+  const totalValue = products.reduce((sum, p) => sum + p.price * p.total_stock, 0);
+  const lowStockCount = products.filter((p) => p.total_stock < 10).length;
+  const outOfStockCount = products.filter((p) => p.total_stock === 0).length;
 
   return {
     totalProducts,

@@ -17,14 +17,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar } from "lucide-react";
-import { Product } from "@/types/product";
-import {
-  formatCurrency,
-  formatDate,
-  getStockStatus,
-  getProductColorHex,
-  getProductColorDisplayName,
-} from "@/utils/productUtils";
+import { Product } from '@/types/product';
+import { 
+  formatCurrency, 
+  formatDate, 
+  getTotalStockStatus, 
+  getStockDisplay,
+  getProductColorHex, 
+  getProductColorDisplayName 
+} from '@/utils/productUtils';
 
 interface ProductsTableProps {
   products: Product[];
@@ -64,14 +65,16 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border">
+        <div className="rounded-md border overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Price</TableHead>
-                <TableHead>Stock</TableHead>
+                <TableHead className="text-center">Total Stock</TableHead>
+                <TableHead className="text-center">TikTok Stock</TableHead>
+                <TableHead className="text-center">Shopee Stock</TableHead>
                 <TableHead>Color</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Status</TableHead>
@@ -81,7 +84,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
               {products.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={9}
                     className="h-24 text-center text-muted-foreground"
                   >
                     No products found.
@@ -89,7 +92,11 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                 </TableRow>
               ) : (
                 products.map((product) => {
-                  const stockStatus = getStockStatus(product.stock);
+                  const stockStatus = getTotalStockStatus(product);
+                  const totalStockDisplay = getStockDisplay(product.total_stock);
+                  const tiktokStockDisplay = getStockDisplay(product.tiktok_stock);
+                  const shopeeStockDisplay = getStockDisplay(product.shopee_stock);
+                  
                   return (
                     <TableRow key={product.id}>
                       <TableCell className="font-medium">
@@ -99,17 +106,19 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                         {product.name}
                       </TableCell>
                       <TableCell>{formatCurrency(product.price)}</TableCell>
-                      <TableCell>
-                        <span
-                          className={`font-medium ${
-                            product.stock === 0
-                              ? "text-red-600"
-                              : product.stock < 10
-                              ? "text-yellow-600"
-                              : "text-green-600"
-                          }`}
-                        >
-                          {product.stock}
+                      <TableCell className="text-center">
+                        <span className={totalStockDisplay.className}>
+                          {totalStockDisplay.value}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <span className={tiktokStockDisplay.className}>
+                          {tiktokStockDisplay.value}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <span className={shopeeStockDisplay.className}>
+                          {shopeeStockDisplay.value}
                         </span>
                       </TableCell>
                       <TableCell>

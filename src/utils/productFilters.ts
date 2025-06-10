@@ -23,11 +23,11 @@ export const filterProductsByStock = (products: Product[], stockFilter: StockFil
   
   switch (stockFilter) {
     case "low":
-      return products.filter((product) => product.stock < 10);
+      return products.filter((product) => product.total_stock < 10);
     case "out":
-      return products.filter((product) => product.stock === 0);
+      return products.filter((product) => product.total_stock === 0);
     case "available":
-      return products.filter((product) => product.stock > 0);
+      return products.filter((product) => product.total_stock > 0);
     default:
       return products;
   }
