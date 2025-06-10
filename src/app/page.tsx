@@ -1,36 +1,24 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function Home() {
-  const [loading, setLoading] = useState(false);
-
-  const handleAddProduct = async () => {
-    setLoading(true);
-    const { data, error } = await supabase.from("products").insert({
-      name: "New Product",
-      price: 1000000,
-      stock: 10,
-      color: "red",
-    });
-
-    if (error) {
-      console.error("Insert error:", error.message);
-    } else {
-      console.log("Inserted product:", data);
-    }
-
-    setLoading(false);
-  };
+  const router = useRouter();
   return (
     <div className="flex justify-center items-center h-screen flex-col">
       <Button
         className="py-10 px-20"
-        onClick={handleAddProduct}
-        disabled={loading}
+        onClick={() => router.push("/addproduct")}
       >
-        {loading ? "Adding..." : "Add Product"}
+        "Add Product"
+      </Button>
+      <Button
+        className="py-10 px-20 my-10"
+        onClick={() => router.push("/dashboard")}
+      >
+        "Dashboard"
       </Button>
     </div>
   );
