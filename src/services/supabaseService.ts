@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import { Product } from '@/types/product';
+import { Product } from "@/types/product";
 
 export class SupabaseService {
   private supabase: SupabaseClient;
@@ -22,7 +22,9 @@ export class SupabaseService {
   }
 
   // Add other product-related database operations here
-  async createProduct(product: Omit<Product, 'id' | 'created_at'>): Promise<Product> {
+  async createProduct(
+    product: Omit<Product, "id" | "created_at">
+  ): Promise<Product> {
     const { data, error } = await this.supabase
       .from("products")
       .insert([product])
@@ -40,7 +42,7 @@ export class SupabaseService {
     const { data, error } = await this.supabase
       .from("products")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -55,7 +57,7 @@ export class SupabaseService {
     const { error } = await this.supabase
       .from("products")
       .delete()
-      .eq('id', id);
+      .eq("id", id);
 
     if (error) {
       throw new Error(error.message);
@@ -64,9 +66,9 @@ export class SupabaseService {
 }
 
 // Factory function to create service instance
-export const createSupabaseService = (supabaseUrl?: string, supabaseKey?: string) => {
-  const url = supabaseUrl || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-  const key = supabaseKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-  
+export const createSupabaseService = () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+
   return new SupabaseService(url, key);
 };

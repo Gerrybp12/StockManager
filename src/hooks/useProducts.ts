@@ -1,15 +1,21 @@
-import { useState, useEffect } from 'react';
-import { Product, StockFilter } from '@/types/product';
-import { SupabaseService, createSupabaseService } from '@/services/supabaseService';
-import { applyAllFilters } from '@/utils/productFilters';
-import { calculateProductStats, getUniqueColors } from '@/utils/productUtils';
+import { useState, useEffect } from "react";
+import { Product, StockFilter } from "@/types/product";
+import {
+  SupabaseService,
+  createSupabaseService,
+} from "@/services/supabaseService";
+import { applyAllFilters } from "@/utils/productFilters";
+import { calculateProductStats, getUniqueColors } from "@/utils/productUtils";
 
 interface UseProductsProps {
   supabaseUrl?: string;
   supabaseKey?: string;
 }
 
-export const useProducts = ({ supabaseUrl, supabaseKey }: UseProductsProps = {}) => {
+export const useProducts = ({
+  supabaseUrl,
+  supabaseKey,
+}: UseProductsProps = {}) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +24,7 @@ export const useProducts = ({ supabaseUrl, supabaseKey }: UseProductsProps = {})
   const [colorFilter, setColorFilter] = useState("all");
   const [stockFilter, setStockFilter] = useState<StockFilter>("all");
 
-  const supabaseService = createSupabaseService(supabaseUrl, supabaseKey);
+  const supabaseService = createSupabaseService();
 
   const fetchProducts = async () => {
     try {
@@ -36,7 +42,12 @@ export const useProducts = ({ supabaseUrl, supabaseKey }: UseProductsProps = {})
 
   // Apply filters whenever products or filter values change
   useEffect(() => {
-    const filtered = applyAllFilters(products, searchTerm, colorFilter, stockFilter);
+    const filtered = applyAllFilters(
+      products,
+      searchTerm,
+      colorFilter,
+      stockFilter
+    );
     setFilteredProducts(filtered);
   }, [products, searchTerm, colorFilter, stockFilter]);
 
@@ -53,25 +64,25 @@ export const useProducts = ({ supabaseUrl, supabaseKey }: UseProductsProps = {})
     // Data
     products,
     filteredProducts,
-    
+
     // Loading states
     loading,
     error,
-    
+
     // Filter states
     searchTerm,
     colorFilter,
     stockFilter,
-    
+
     // Filter setters
     setSearchTerm,
     setColorFilter,
     setStockFilter,
-    
+
     // Computed values
     uniqueColors,
     stats,
-    
+
     // Actions
     fetchProducts,
     supabaseService, // Expose service for additional operations

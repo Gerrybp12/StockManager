@@ -17,15 +17,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar } from "lucide-react";
-import { Product } from '@/types/product';
-import { 
-  formatCurrency, 
-  formatDate, 
-  getTotalStockStatus, 
+import { Product } from "@/types/product";
+import {
+  formatCurrency,
+  formatDate,
+  getTotalStockStatus,
   getStockDisplay,
-  getProductColorHex, 
-  getProductColorDisplayName 
-} from '@/utils/productUtils';
+  getProductColorHex,
+  getProductColorDisplayName,
+} from "@/utils/productUtils";
 
 interface ProductsTableProps {
   products: Product[];
@@ -93,10 +93,16 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
               ) : (
                 products.map((product) => {
                   const stockStatus = getTotalStockStatus(product);
-                  const totalStockDisplay = getStockDisplay(product.total_stock);
-                  const tiktokStockDisplay = getStockDisplay(product.tiktok_stock);
-                  const shopeeStockDisplay = getStockDisplay(product.shopee_stock);
-                  
+                  const totalStockDisplay = getStockDisplay(
+                    product.total_stock
+                  );
+                  const tiktokStockDisplay = getStockDisplay(
+                    product.tiktok_stock
+                  );
+                  const shopeeStockDisplay = getStockDisplay(
+                    product.shopee_stock
+                  );
+
                   return (
                     <TableRow key={product.id}>
                       <TableCell className="font-medium">
