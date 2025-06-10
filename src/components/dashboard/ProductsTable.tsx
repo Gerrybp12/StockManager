@@ -1,4 +1,5 @@
 import React from "react";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -15,8 +16,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar } from "lucide-react";
+import { Calendar, Edit } from "lucide-react";
 import { Product } from "@/types/product";
 import {
   formatCurrency,
@@ -38,6 +40,12 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
   totalProducts,
   loading,
 }) => {
+  const router = useRouter();
+
+  const handleEdit = (productId: string | number) => {
+    router.push(`/edit/${productId}`);
+  };
+
   if (loading) {
     return (
       <Card>
@@ -78,13 +86,14 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                 <TableHead>Color</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {products.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={9}
+                    colSpan={10}
                     className="h-24 text-center text-muted-foreground"
                   >
                     No products found.
@@ -153,6 +162,16 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                         <Badge variant={stockStatus.variant}>
                           {stockStatus.label}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(product.id)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   );
