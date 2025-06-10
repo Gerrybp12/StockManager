@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import AddProductPage from "./addproduct/page";
 import colors from "@/lib/data";
 
 export default function Home() {
