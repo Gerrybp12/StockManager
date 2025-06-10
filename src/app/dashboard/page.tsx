@@ -9,10 +9,7 @@ import StatsCards from '@/components/dashboard/StatsCards';
 import ProductFilters from '@/components/dashboard/ProductFilters';
 import ProductsTable from '@/components/dashboard/ProductsTable';
 
-const ProductsPage: React.FC<ProductsPageProps> = ({
-  supabaseUrl,
-  supabaseKey,
-}) => {
+const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
   const {
     filteredProducts,
     loading,
@@ -25,7 +22,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
     setStockFilter,
     stats,
     fetchProducts,
-  } = useProducts({ supabaseUrl, supabaseKey });
+  } = useProducts();
 
   if (error) {
     return (
