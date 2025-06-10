@@ -3,7 +3,7 @@ const colors = {
   burgundiUngu: "#660033",
   emeralBlue: "#0F5A5E",
   emeralGreen: "#50C878",
-  mahogani: "#C04000",
+  mahogani: "#3D0C02",
   dusty: "#B2996E",
   rosegold: "#DEA193", // alternatif: '#B76E79'
   mocca: "#9D7651",
