@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { ProductsPageProps } from '@/types/product';
+import { Product, ProductsPageProps } from '@/types/product';
 import { useProducts } from '@/hooks/useProducts';
 import StatsCards from '@/components/dashboard/StatsCards';
 import ProductFilters from '@/components/dashboard/ProductFilters';
@@ -22,6 +22,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
     setStockFilter,
     stats,
     fetchProducts,
+    updateProduct
   } = useProducts();
 
   if (error) {
@@ -34,6 +35,20 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
       </div>
     );
   }
+
+   // Global loading state - tracks if any operation is in progress
+  const [isAnyLoading, setIsAnyLoading] = React.useState(false);
+
+  // Wrapper for updateProduct with global loading state
+  const handleUpdateProduct = async (id: number, updates: Partial<Product>) => {
+    setIsAnyLoading(true);
+    try {
+      const result = await updateProduct(id, updates);
+      return result;
+    } finally {
+      setIsAnyLoading(false);
+    }
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -68,6 +83,8 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
         products={filteredProducts}
         totalProducts={stats.totalProducts}
         loading={loading}
+        updateProduct={handleUpdateProduct}
+        isAnyLoading={isAnyLoading}
       />
     </div>
   );
