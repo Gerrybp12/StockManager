@@ -7,6 +7,7 @@ export interface Product {
   total_stock: number;
   tiktok_stock: number;
   shopee_stock: number;
+  toko_stock: number;
   color: string;
   created_at: string;
 }
