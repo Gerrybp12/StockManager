@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import colors from "@/lib/data";
+import colors from "@/lib/colors";
+import { getProductColorDisplayName } from "@/utils/productUtils";
 
 export default function Home() {
   const router = useRouter();
@@ -47,8 +48,14 @@ export default function Home() {
         "Dashboard"
       </Button>
       {addProductOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 w-150 h-150">
-          <div className="flex flex-col gap-3 items-center justify-center">
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{
+            background: "rgba(49,49,49,0.8)",
+          }}
+        >
+          <div className="flex flex-col gap-3 p-10 rounded-md bg-white items-center justify-center">
+            <h1 className="">Add Product</h1>
             <div className="flex flex-row">
               <div className="flex flex-col">
                 <input
@@ -84,22 +91,26 @@ export default function Home() {
                   required
                 />
               </div>
-              <div className="flex flex-wrap m=5 w-60 bg-gray-100">
-                {(Object.entries(colors) as [string, string][]).map(
-                  ([name, hex]) => (
-                    <div key={name} className="text-center ">
-                      <Button
-                        className={`border-2 ${
-                          colorSelected === name ? "w-13 h-13" : ""
-                        }`}
-                        onClick={() => setColorSelected(name)}
-                        style={{ backgroundColor: hex }}
-                      ></Button>
-                    </div>
-                  )
-                )}
+              <div className="flex flex-col">
+                <h1 className="border p-2 rounded my-0.5">
+                  Warna : {getProductColorDisplayName(colorSelected)}
+                </h1>
+                <div className="flex flex-wrap w-60">
+                  {(Object.entries(colors) as [string, string][]).map(
+                    ([name, hex]) => (
+                      <div key={name} className="text-center ">
+                        <Button
+                          className={`border-2 ${
+                            colorSelected === name ? "w-13 h-13" : ""
+                          }`}
+                          onClick={() => setColorSelected(name)}
+                          style={{ backgroundColor: hex }}
+                        ></Button>
+                      </div>
+                    )
+                  )}
+                </div>
               </div>
-              <h1>Tes</h1>
             </div>
 
             <div className="flex justify-between">
