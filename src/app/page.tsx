@@ -1,10 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/supabaseClient";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getProfile } from "./login/actions";
 import colors from "@/lib/colors";
 import { getProductColorDisplayName } from "@/utils/productUtils";
 import { useNavigation } from "@/hooks/useNavigation";
+import { createClient } from "@/utils/supabase/client";
+import { UserProfile } from "@/types/user";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Home() {
   const [addProductOpen, setAddProductOpen] = useState(false);
@@ -14,10 +17,42 @@ export default function Home() {
   const [modal, setModal] = useState("");
   const [colorSelected, setColorSelected] = useState("burgundiMaron");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [globalError, setGlobalError] = useState<string | null>(null);
+
+  const supabase = createClient();
 
   // Fixed destructuring syntax
   const { navigateTo, isLoading, isAnyLoading } = useNavigation();
   const buttonClass = "py-10 px-20";
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  async function loadProfile() {
+    try {
+      setLoading(true);
+      setGlobalError(null);
+
+      const result = await getProfile();
+
+      if (result.error) {
+        setGlobalError(result.error);
+        if (result.error === "User not authenticated") {
+          navigateTo("/login", "login");
+        }
+        return;
+      }
+      setProfile(result.profile);
+    } catch (error) {
+      console.error("Error loading profile:", error);
+      setGlobalError("Failed to load profile");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +87,21 @@ export default function Home() {
 
   return (
     <div className="flex justify-center items-center h-screen flex-col gap-5">
+      {globalError && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription className="flex items-center justify-between">
+            <span>{globalError}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={getProfile}
+              className="ml-4"
+            >
+              Try Again
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
       <Button
         className={buttonClass}
         onClick={() => setAddProductOpen(true)}
@@ -156,6 +206,35 @@ export default function Home() {
           </div>
         </div>
       )}
+      <div className="flex flex-row gap-4">
+        {(profile?.role == "tiktok" || profile?.role == "manager") && (
+          <Button
+            className={buttonClass}
+            onClick={() => navigateTo("/cart", "cart")}
+            disabled={isAnyLoading}
+          >
+            {isLoading("dashboard") ? "Loading..." : "Tiktok"}
+          </Button>
+        )}
+        {(profile?.role == "shopee" || profile?.role == "manager") && (
+          <Button
+            className={buttonClass}
+            onClick={() => navigateTo("/cart", "cart")}
+            disabled={isAnyLoading}
+          >
+            {isLoading("dashboard") ? "Loading..." : "Shopee"}
+          </Button>
+        )}
+        {(profile?.role == "toko" || profile?.role == "manager") && (
+          <Button
+            className={buttonClass}
+            onClick={() => navigateTo("/cart", "cart")}
+            disabled={isAnyLoading}
+          >
+            {isLoading("dashboard") ? "Loading..." : "Tiktok"}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
