@@ -1,14 +1,20 @@
+import { CartProduct } from "@/types/cart";
 import { Product } from "@/types/product";
 import { useState } from "react";
 
 export const useCart = () => {
-  const [cart, setCart] = useState<{ [id: string]: number }>({});
+  const [cart, setCart] = useState<CartProduct[]>([]);
 
-  const addProduct = (id: string, quantity: number) => {
-    setCart((prev) => ({
+  const addProduct = (
+    id: string,
+    quantity: number,
+    price: number,
+    color: string
+  ) => {
+    setCart((prev) => [
       ...prev,
-      [id]: quantity,
-    }));
+      { quantity: quantity, id: id, price: price, color: color },
+    ]);
   };
   return {
     cart,

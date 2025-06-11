@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -17,6 +17,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  getProductColorDisplayName,
+  getProductColorHex,
+} from "@/utils/productUtils";
 
 const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
   const {
@@ -32,6 +36,10 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
   } = useProducts();
 
   const { cart, addProduct } = useCart();
+  const totalHarga = cart.reduce(
+    (sum, cartProduct) => sum + cartProduct.price * cartProduct.quantity,
+    0
+  );
 
   if (error) {
     return (
@@ -88,7 +96,9 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>ID</TableHead>
-                      <TableHead>{Object.keys(cart).length}</TableHead>
+                      <TableHead>Warna</TableHead>
+                      <TableHead>Jumlah</TableHead>
+                      <TableHead>Harga</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -102,15 +112,40 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      Object.entries(cart).map(([id, quantity]) => (
-                        <TableRow key={id}>
-                          <TableCell>#{id}</TableCell>
-                          <TableCell>{quantity}</TableCell>
+                      cart.map((cartProduct, index) => (
+                        <TableRow key={index}>
+                          <TableCell>#{cartProduct.id}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-4 h-4 rounded-full border border-gray-300"
+                                style={{
+                                  backgroundColor: getProductColorHex(
+                                    cartProduct.color
+                                  ),
+                                }}
+                                title={getProductColorDisplayName(
+                                  cartProduct.color
+                                )}
+                              />
+                              <span>
+                                {getProductColorDisplayName(cartProduct.color)}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>{cartProduct.quantity}</TableCell>
+                          <TableCell>
+                            {cartProduct.price * cartProduct.quantity}
+                          </TableCell>
                         </TableRow>
                       ))
                     )}
                   </TableBody>
                 </Table>
+              </div>
+              <div className="flex flex-row justify-between">
+                <h1>TOTAL: {totalHarga}</h1>
+                <Button>Checkout</Button>
               </div>
             </CardContent>
           </Card>

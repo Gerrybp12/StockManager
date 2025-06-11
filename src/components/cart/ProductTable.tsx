@@ -29,14 +29,20 @@ import {
   getProductColorHex,
   getProductColorDisplayName,
 } from "@/utils/productUtils";
+import { CartProduct } from "@/types/cart";
 
 interface ProductsTableProps {
   products: Product[];
   totalProducts: number;
   role: string;
   loading: boolean;
-  addProduct: (id: string, quantity: number) => void;
-  cart: { [id: string]: number };
+  addProduct: (
+    id: string,
+    quantity: number,
+    price: number,
+    color: string
+  ) => void;
+  cart: CartProduct[];
 }
 
 const ProductsTable: React.FC<ProductsTableProps> = ({
@@ -80,7 +86,12 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
         : productDipilih.toko_stock;
       if (jumlah !== 0) {
         if (jumlah <= stok) {
-          addProduct(String(productDipilih.id), jumlah);
+          addProduct(
+            String(productDipilih.id),
+            jumlah,
+            productDipilih.price,
+            productDipilih.color
+          );
           alert("berhasil");
         } else {
           alert("jumlah melebihi batas stok");
