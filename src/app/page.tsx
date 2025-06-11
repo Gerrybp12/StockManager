@@ -199,7 +199,11 @@ export default function Home() {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? "Adding..." : "Add Product"}
               </Button>
             </div>
