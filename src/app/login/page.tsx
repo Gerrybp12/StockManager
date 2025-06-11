@@ -1,14 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigation } from '@/hooks/useNavigation'
 import { useFormStatus } from 'react-dom'
-import { login } from './actions'
+import { login, getCurrentUser } from './actions'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2 } from "lucide-react"
+import LoadingSpinner from "@/components/ui/LoadingSpinner"
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -17,8 +18,8 @@ function SubmitButton() {
     <Button type="submit" className="w-full" disabled={pending}>
       {pending ? (
         <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Logging in...
+          <LoadingSpinner size="sm" color="white" />
+          <span className="ml-2">Logging in...</span>
         </>
       ) : (
         'Log in'
@@ -29,6 +30,27 @@ function SubmitButton() {
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
+  const [isChecking, setIsChecking] = useState(true)
+  const { navigateTo, isLoading } = useNavigation()
+
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const user = await getCurrentUser()
+        if (user) {
+          navigateTo('/', 'auth-redirect')
+          return
+        }
+      } catch (error) {
+        // User is not authenticated, continue with login page
+        console.log('User not authenticated')
+      } finally {
+        setIsChecking(false)
+      }
+    }
+
+    checkAuth()
+  }, [navigateTo])
 
   async function handleLogin(formData: FormData) {
     setError(null)
@@ -36,6 +58,19 @@ export default function LoginPage() {
     if (result?.error) {
       setError(result.error)
     }
+    // No need to manually redirect here since your login action already redirects
+  }
+
+  // Show loading spinner while checking authentication or navigating
+  if (isChecking || isLoading('auth-redirect')) {
+    return (
+      <LoadingSpinner 
+        fullScreen={true} 
+        text={isChecking ? "Checking authentication..." : "Redirecting..."} 
+        size="lg" 
+        color="blue" 
+      />
+    )
   }
 
   return (

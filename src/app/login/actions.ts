@@ -44,6 +44,22 @@ export async function login(formData: FormData) {
   redirect('/')
 }
 
+export async function getCurrentUser() {
+  const supabase = await createClient()
+  
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser()
+    
+    if (error || !user) {
+      return null
+    }
+    
+    return user
+  } catch (error) {
+    return null
+  }
+}
+
 // export async function signup(formData: FormData) {
 //   const supabase = await createClient()
 
