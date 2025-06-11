@@ -83,6 +83,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                 <TableHead className="text-center">Total Stock</TableHead>
                 <TableHead className="text-center">TikTok Stock</TableHead>
                 <TableHead className="text-center">Shopee Stock</TableHead>
+                <TableHead className="text-center">Toko Stock</TableHead>
                 <TableHead>Color</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Status</TableHead>
@@ -111,6 +112,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                   const shopeeStockDisplay = getStockDisplay(
                     product.shopee_stock
                   );
+                  const tokoStockDisplay = getStockDisplay(product.toko_stock);
 
                   return (
                     <TableRow key={product.id}>
@@ -134,6 +136,11 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                       <TableCell className="text-center">
                         <span className={shopeeStockDisplay.className}>
                           {shopeeStockDisplay.value}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <span className={tokoStockDisplay.className}>
+                          {tokoStockDisplay.value}
                         </span>
                       </TableCell>
                       <TableCell>
