@@ -1,96 +1,104 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
-import { useNavigation } from '@/hooks/useNavigation'
-import { ArrowLeft, User, Mail, Shield, LogOut } from 'lucide-react'
+import { useEffect, useState } from "react";
+import { createClient } from "@/utils/supabase/client";
+import { useNavigation } from "@/hooks/useNavigation";
+import { ArrowLeft, User, Mail, Shield, LogOut } from "lucide-react";
 
-import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Separator } from '@/components/ui/separator'
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 
 interface UserProfile {
-  id: string
-  username: string
-  email: string
-  role: string
+  id: string;
+  username: string;
+  email: string;
+  role: string;
 }
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  
-  const supabase = createClient()
-  const { navigateTo, isLoading } = useNavigation()
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [globalError, setGlobalError] = useState<string | null>(null);
+
+  const supabase = createClient();
+  const { navigateTo, isLoading } = useNavigation();
 
   useEffect(() => {
-    getProfile()
-  }, [])
+    getProfile();
+  }, []);
 
   async function getProfile() {
     try {
-      setLoading(true)
-      setError(null)
-      
-      const { data: { user } } = await supabase.auth.getUser()
-      
+      setLoading(true);
+      setGlobalError(null);
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) {
-        navigateTo('/login', 'login')
-        return
+        navigateTo("/login", "login");
+        return;
       }
 
       const { data, error } = await supabase
-        .from('users')
-        .select('id, username, email, role')
-        .eq('id', user.id)
-        .single()
+        .from("users")
+        .select("id, username, email, role")
+        .eq("id", user.id)
+        .single();
 
       if (error) {
-        throw error
+        throw error;
       }
 
-      setProfile(data)
+      setProfile(data);
     } catch (error) {
-      console.error('Error loading profile:', error)
-      setError('Failed to load profile')
+      console.error("Error loading profile:", error);
+      setGlobalError("Failed to load profile");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   async function signOut() {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      
-      navigateTo('/login', 'logout')
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+
+      navigateTo("/login", "logout");
     } catch (error) {
-      console.error('Error signing out:', error)
-      setError('Failed to sign out')
+      console.error("Error signing out:", error);
+      setGlobalError("Failed to sign out");
     }
   }
 
   function handleBack() {
-    navigateTo('/', 'back')
+    navigateTo("/", "back");
   }
 
   function getRoleBadgeVariant(role: string) {
     switch (role.toLowerCase()) {
-      case 'admin':
-        return 'destructive'
-      case 'moderator':
-        return 'secondary'
+      case "admin":
+        return "destructive";
+      case "moderator":
+        return "secondary";
       default:
-        return 'default'
+        return "default";
     }
   }
 
   if (loading) {
-    return <LoadingSpinner fullScreen text="Loading profile..." />
+    return <LoadingSpinner fullScreen text="Loading profile..." />;
   }
 
   return (
@@ -110,10 +118,10 @@ export default function ProfilePage() {
         </div>
 
         {/* Error Alert */}
-        {error && (
+        {globalError && (
           <Alert variant="destructive" className="mb-6">
             <AlertDescription className="flex items-center justify-between">
-              <span>{error}</span>
+              <span>{globalError}</span>
               <Button
                 variant="outline"
                 size="sm"
@@ -138,7 +146,7 @@ export default function ProfilePage() {
                 Your personal information and account settings
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent className="space-y-6">
               {/* Username */}
               <div className="space-y-2">
@@ -169,7 +177,10 @@ export default function ProfilePage() {
                 </label>
                 <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
                   <Shield className="h-4 w-4 text-muted-foreground" />
-                  <Badge variant={getRoleBadgeVariant(profile.role)} className="capitalize">
+                  <Badge
+                    variant={getRoleBadgeVariant(profile.role)}
+                    className="capitalize"
+                  >
                     {profile.role}
                   </Badge>
                 </div>
@@ -180,16 +191,16 @@ export default function ProfilePage() {
               {/* Actions */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Account Actions</h3>
-                
+
                 <Button
                   onClick={signOut}
-                  disabled={isLoading('logout')}
+                  disabled={isLoading("logout")}
                   variant="destructive"
                   className="w-full"
                   size="lg"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
-                  {isLoading('logout') ? 'Logging out...' : 'Logout'}
+                  {isLoading("logout") ? "Logging out..." : "Logout"}
                 </Button>
               </div>
             </CardContent>
@@ -200,11 +211,7 @@ export default function ProfilePage() {
               <div className="text-center">
                 <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">No profile found</p>
-                <Button
-                  onClick={getProfile}
-                  variant="outline"
-                  className="mt-4"
-                >
+                <Button onClick={getProfile} variant="outline" className="mt-4">
                   Refresh
                 </Button>
               </div>
@@ -213,5 +220,5 @@ export default function ProfilePage() {
         )}
       </div>
     </div>
-  )
+  );
 }
