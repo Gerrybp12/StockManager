@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useNavigation } from '@/hooks/useNavigation'
+import { useState } from 'react'
 import { useFormStatus } from 'react-dom'
-import { login, getCurrentUser } from './actions'
+import { login } from './actions'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -30,27 +29,6 @@ function SubmitButton() {
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
-  const [isChecking, setIsChecking] = useState(true)
-  const { navigateTo, isLoading } = useNavigation()
-
-  useEffect(() => {
-    async function checkAuth() {
-      try {
-        const user = await getCurrentUser()
-        if (user) {
-          navigateTo('/', 'auth-redirect')
-          return
-        }
-      } catch (error) {
-        // User is not authenticated, continue with login page
-        console.log('User not authenticated')
-      } finally {
-        setIsChecking(false)
-      }
-    }
-
-    checkAuth()
-  }, [navigateTo])
 
   async function handleLogin(formData: FormData) {
     setError(null)
@@ -58,19 +36,6 @@ export default function LoginPage() {
     if (result?.error) {
       setError(result.error)
     }
-    // No need to manually redirect here since your login action already redirects
-  }
-
-  // Show loading spinner while checking authentication or navigating
-  if (isChecking || isLoading('auth-redirect')) {
-    return (
-      <LoadingSpinner 
-        fullScreen={true} 
-        text={isChecking ? "Checking authentication..." : "Redirecting..."} 
-        size="lg" 
-        color="blue" 
-      />
-    )
   }
 
   return (
