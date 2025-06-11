@@ -1,52 +1,79 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabaseClient";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import colors from "@/lib/colors";
 import { getProductColorDisplayName } from "@/utils/productUtils";
+import { useNavigation } from "@/hooks/useNavigation";
 
 export default function Home() {
-  const router = useRouter();
   const [addProductOpen, setAddProductOpen] = useState(false);
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [modal, setModal] = useState("");
-  const [colorSelected, setColorSelected] = useState("burgundiMaron"); // Default color
+  const [colorSelected, setColorSelected] = useState("burgundiMaron");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fixed destructuring syntax
+  const { navigateTo, isLoading, isAnyLoading } = useNavigation();
+  const buttonClass = "py-10 px-20";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.from("products").insert({
-      name,
-      price: parseFloat(price),
-      total_stock: parseInt(stock),
-      color: colorSelected,
-      modal: parseFloat(modal),
-    });
-    if (!error) {
-      router.back();
-    }
-    if (error) {
-      alert("Error: " + error.message);
-    } else {
-      alert("Product added!");
-      setName("");
-      setPrice("");
-      setStock("");
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await supabase.from("products").insert({
+        name,
+        price: parseFloat(price),
+        total_stock: parseInt(stock),
+        color: colorSelected,
+        modal: parseFloat(modal),
+      });
+
+      if (error) {
+        alert("Error: " + error.message);
+      } else {
+        alert("Product added!");
+        setName("");
+        setPrice("");
+        setStock("");
+        setModal("");
+        setColorSelected("burgundiMaron");
+        setAddProductOpen(false); // Close modal on success
+      }
+    } catch (error) {
+      alert("An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
   return (
-    <div className="flex justify-center items-center h-screen flex-col">
-      <Button className="py-10 px-20" onClick={() => setAddProductOpen(true)}>
-        "Add Product"
+    <div className="flex justify-center items-center h-screen flex-col gap-5">
+      <Button
+        className={buttonClass}
+        onClick={() => setAddProductOpen(true)}
+        disabled={isAnyLoading}
+      >
+        Add Product
       </Button>
       <Button
-        className="py-10 px-20 my-10"
-        onClick={() => router.push("/dashboard")}
+        className={buttonClass}
+        onClick={() => navigateTo("/dashboard", "dashboard")}
+        disabled={isAnyLoading}
       >
-        "Dashboard"
+        {isLoading("dashboard") ? "Loading..." : "Dashboard"}
       </Button>
+      <Button
+        className={buttonClass}
+        onClick={() => navigateTo("/profile", "profile")}
+        disabled={isAnyLoading}
+      >
+        {isLoading("profile") ? "Loading..." : "Profile"}
+      </Button>
+
       {addProductOpen && (
         <div
           className="fixed inset-0 flex items-center justify-center z-50"
@@ -113,14 +140,17 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="flex justify-between">
-              <Button onClick={handleSubmit}>Submit</Button>
+            <div className="flex justify-end gap-2 mt-6">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setAddProductOpen(false)}
+                disabled={isSubmitting}
               >
                 Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Adding..." : "Add Product"}
               </Button>
             </div>
           </div>
