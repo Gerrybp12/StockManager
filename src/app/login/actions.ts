@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import { createClient } from '@/utils/supabase/server'
+import { UserProfile } from '@/types/user'
 
 import { z } from 'zod'
 
@@ -57,6 +58,35 @@ export async function getCurrentUser() {
     return user
   } catch (error) {
     return null
+  }
+}
+
+export async function getProfile(): Promise<{ user: any; profile: UserProfile | null; error?: string }> {
+  const supabase = await createClient()
+  
+  try {
+    // Get current user
+    const user = await getCurrentUser()
+    
+    if (!user) {
+      return { user: null, profile: null, error: 'User not authenticated' }
+    }
+
+    // Get user profile from the users table
+    const { data, error } = await supabase
+      .from("users")
+      .select("id, username, email, role")
+      .eq("id", user.id)
+      .single()
+
+    if (error) {
+      return { user, profile: null, error: error.message }
+    }
+
+    return { user, profile: data }
+  } catch (error) {
+    console.error('Error in getProfile:', error)
+    return { user: null, profile: null, error: 'Failed to load profile' }
   }
 }
 

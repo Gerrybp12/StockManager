@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { getProfile } from "@/app/login/actions";
 import { useNavigation } from "@/hooks/useNavigation";
 import { ArrowLeft, User, Mail, Shield, LogOut } from "lucide-react";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Button } from "@/components/ui/button";
@@ -17,15 +19,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-
-interface UserProfile {
-  id: string;
-  username: string;
-  email: string;
-  role: string;
-}
+import { UserProfile } from "@/types/user";
 
 export default function ProfilePage() {
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [globalError, setGlobalError] = useState<string | null>(null);
@@ -34,34 +31,26 @@ export default function ProfilePage() {
   const { navigateTo, isLoading } = useNavigation();
 
   useEffect(() => {
-    getProfile();
+    loadProfile();
   }, []);
 
-  async function getProfile() {
+  async function loadProfile() {
     try {
       setLoading(true);
       setGlobalError(null);
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const result = await getProfile();
 
-      if (!user) {
-        navigateTo("/login", "login");
+      if (result.error) {
+        setGlobalError(result.error);
+        if (result.error === 'User not authenticated') {
+          navigateTo("/login", "login");
+        }
         return;
       }
 
-      const { data, error } = await supabase
-        .from("users")
-        .select("id, username, email, role")
-        .eq("id", user.id)
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      setProfile(data);
+      setUser(result.user);
+      setProfile(result.profile);
     } catch (error) {
       console.error("Error loading profile:", error);
       setGlobalError("Failed to load profile");
@@ -125,7 +114,7 @@ export default function ProfilePage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={getProfile}
+                onClick={loadProfile}
                 className="ml-4"
               >
                 Try Again
@@ -135,7 +124,7 @@ export default function ProfilePage() {
         )}
 
         {/* Profile Card */}
-        {profile ? (
+        {profile && user ? (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -186,11 +175,22 @@ export default function ProfilePage() {
                 </div>
               </div>
 
+              {/* User ID (from Supabase Auth) */}
+              {/* <div className="space-y-2">
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  User ID
+                </label>
+                <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                  <Shield className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-mono text-sm text-muted-foreground">{user.id}</span>
+                </div>
+              </div> */}
+
               <Separator />
 
               {/* Actions */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Account Actions</h3>
+                <h3 className="text-lg font-semibold">Logout</h3>
 
                 <Button
                   onClick={signOut}
@@ -211,7 +211,7 @@ export default function ProfilePage() {
               <div className="text-center">
                 <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">No profile found</p>
-                <Button onClick={getProfile} variant="outline" className="mt-4">
+                <Button onClick={loadProfile} variant="outline" className="mt-4">
                   Refresh
                 </Button>
               </div>
