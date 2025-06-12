@@ -214,7 +214,7 @@ export default function Home() {
         {(profile?.role == "tiktok" || profile?.role == "manager") && (
           <Button
             className={buttonClass}
-            onClick={() => navigateTo("/cart", "cart")}
+            onClick={() => navigateTo("/cart/tiktok", "cart")}
             disabled={isAnyLoading}
           >
             {isLoading("dashboard") ? "Loading..." : "Tiktok"}
@@ -223,7 +223,7 @@ export default function Home() {
         {(profile?.role == "shopee" || profile?.role == "manager") && (
           <Button
             className={buttonClass}
-            onClick={() => navigateTo("/cart", "cart")}
+            onClick={() => navigateTo("/cart/shopee", "cart")}
             disabled={isAnyLoading}
           >
             {isLoading("dashboard") ? "Loading..." : "Shopee"}
@@ -232,7 +232,7 @@ export default function Home() {
         {(profile?.role == "toko" || profile?.role == "manager") && (
           <Button
             className={buttonClass}
-            onClick={() => navigateTo("/cart", "cart")}
+            onClick={() => navigateTo("/cart/toko", "cart")}
             disabled={isAnyLoading}
           >
             {isLoading("dashboard") ? "Loading..." : "Tiktok"}

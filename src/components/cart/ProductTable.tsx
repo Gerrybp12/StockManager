@@ -39,6 +39,7 @@ interface ProductsTableProps {
   addProduct: (
     id: string,
     quantity: number,
+    initial_stock: number,
     price: number,
     color: string
   ) => void;
@@ -76,6 +77,12 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
     setPopup(true);
   };
 
+  const stock = tiktok
+    ? productDipilih?.tiktok_stock
+    : shopee
+    ? productDipilih?.shopee_stock
+    : productDipilih?.toko_stock;
+
   const addToCart = () => {
     if (productDipilih !== undefined) {
       const jumlah = parseInt(quantity);
@@ -89,10 +96,10 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
           addProduct(
             String(productDipilih.id),
             jumlah,
+            stock ?? 0,
             productDipilih.price,
             productDipilih.color
           );
-          alert("berhasil");
         } else {
           alert("jumlah melebihi batas stok");
         }

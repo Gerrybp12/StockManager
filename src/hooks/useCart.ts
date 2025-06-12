@@ -8,12 +8,19 @@ export const useCart = () => {
   const addProduct = (
     id: string,
     quantity: number,
+    initial_stock: number,
     price: number,
     color: string
   ) => {
     setCart((prev) => [
       ...prev,
-      { quantity: quantity, id: id, price: price, color: color },
+      {
+        quantity: quantity,
+        initial_stock: initial_stock,
+        id: id,
+        price: price,
+        color: color,
+      },
     ]);
   };
   return {

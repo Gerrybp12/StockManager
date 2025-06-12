@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -9,6 +9,7 @@ import ProductFilters from "@/components/cart/ProductFilter";
 import ProductsTable from "@/components/cart/ProductTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCart } from "@/hooks/useCart";
+import { useNavigation } from "@/hooks/useNavigation";
 import {
   Table,
   TableBody,
@@ -18,11 +19,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  formatCurrency,
   getProductColorDisplayName,
   getProductColorHex,
 } from "@/utils/productUtils";
+import { UserProfile } from "@/types/user";
+import { getProfile } from "../../login/actions";
+import { CartProduct } from "@/types/cart";
+import { useParams } from "next/navigation";
+import { useRouter } from "next/router";
 
 const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
+  const params = useParams<{ role: string }>();
+  const role = params.role;
   const {
     filteredProducts,
     loading,
@@ -33,13 +42,66 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
     setColorFilter,
     stats,
     fetchProducts,
+    updateProduct,
   } = useProducts();
 
+  const { navigateTo } = useNavigation();
+
+  const [updating, setUpdating] = useState(false);
   const { cart, addProduct } = useCart();
+  const [popup, setPopup] = useState(false);
   const totalHarga = cart.reduce(
     (sum, cartProduct) => sum + cartProduct.price * cartProduct.quantity,
     0
   );
+
+  const handleAddStockTiktok = async (cartProduct: CartProduct) => {
+    try {
+      await updateProduct(cartProduct.id as unknown as number, {
+        tiktok_stock: cartProduct.initial_stock - cartProduct.quantity,
+      });
+    } catch (error) {
+      throw error;
+    }
+  };
+  const handleAddStockShopee = async (cartProduct: CartProduct) => {
+    try {
+      await updateProduct(cartProduct.id as unknown as number, {
+        shopee_stock: cartProduct.initial_stock - cartProduct.quantity,
+      });
+    } catch (error) {
+      throw error;
+    }
+  };
+  const handleAddStockToko = async (cartProduct: CartProduct) => {
+    try {
+      await updateProduct(cartProduct.id as unknown as number, {
+        toko_stock: cartProduct.initial_stock - cartProduct.quantity,
+      });
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleUpdate = () => {
+    setUpdating(true);
+    try {
+      for (const cartProduct of cart) {
+        if (role === "tiktok") {
+          handleAddStockTiktok(cartProduct);
+        } else if (role === "shopee") {
+          handleAddStockShopee(cartProduct);
+        } else {
+          handleAddStockToko(cartProduct);
+        }
+      }
+      setPopup(true);
+    } catch (error) {
+      alert("Failed to update stock");
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   if (error) {
     return (
@@ -54,6 +116,28 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+      {popup && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{
+            background: "rgba(49,49,49,0.8)",
+          }}
+        >
+          <div className="bg-white flex flex-col gap-3 p-10 rounded-md items-center justify-center">
+            <h1>Berhasil</h1>
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                onClick={() => {
+                  window.location.reload();
+                }}
+              >
+                Tutup
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -80,7 +164,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
             products={filteredProducts}
             totalProducts={stats.totalProducts}
             loading={loading}
-            role="tiktok"
+            role={role}
             addProduct={addProduct}
             cart={cart}
           />
@@ -135,7 +219,9 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
                           </TableCell>
                           <TableCell>{cartProduct.quantity}</TableCell>
                           <TableCell>
-                            {cartProduct.price * cartProduct.quantity}
+                            {formatCurrency(
+                              cartProduct.price * cartProduct.quantity
+                            )}
                           </TableCell>
                         </TableRow>
                       ))
@@ -144,8 +230,10 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
                 </Table>
               </div>
               <div className="flex flex-row justify-between">
-                <h1>TOTAL: {totalHarga}</h1>
-                <Button>Checkout</Button>
+                <h1>TOTAL: {formatCurrency(totalHarga)}</h1>
+                <Button disabled={cart.length == 0} onClick={handleUpdate}>
+                  {updating ? "Loading" : "Checkout"}
+                </Button>
               </div>
             </CardContent>
           </Card>
