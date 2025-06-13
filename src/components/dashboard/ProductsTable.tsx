@@ -37,6 +37,7 @@ import {
   getProductColorHex,
   getProductColorDisplayName,
 } from "@/utils/productUtils";
+import newLog from "@/hooks/useLog";
 
 interface ProductsTableProps {
   products: Product[];
@@ -68,7 +69,8 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
   isAnyLoading = false,
 }) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [stockValues, setStockValues] = useState<StockUpdate>(INITIAL_STOCK_VALUES);
+  const [stockValues, setStockValues] =
+    useState<StockUpdate>(INITIAL_STOCK_VALUES);
   const [isUpdating, setIsUpdating] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -81,11 +83,15 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
   const hasPrevPage = currentPage > 1;
 
   const isModalOpen = selectedProduct !== null;
-  const totalStockToDeduct = Object.values(stockValues).reduce((sum, val) => sum + val, 0);
-  const newTotalStock = selectedProduct 
+  const totalStockToDeduct = Object.values(stockValues).reduce(
+    (sum, val) => sum + val,
+    0
+  );
+  const newTotalStock = selectedProduct
     ? Math.max(0, selectedProduct.total_stock - totalStockToDeduct)
     : 0;
-  const canUpdate = totalStockToDeduct > 0 && 
+  const canUpdate =
+    totalStockToDeduct > 0 &&
     totalStockToDeduct <= (selectedProduct?.total_stock || 0);
 
   const openModal = (product: Product) => {
@@ -99,7 +105,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
   };
 
   const handleStockChange = (platform: keyof StockUpdate, value: string) => {
-    setStockValues(prev => ({
+    setStockValues((prev) => ({
       ...prev,
       [platform]: parseInt(value) || 0,
     }));
@@ -116,9 +122,17 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
         toko_stock: selectedProduct.toko_stock + stockValues.toko,
         total_stock: newTotalStock,
       });
+      newLog(
+        "Pemindahan stok",
+        `Stok gudang: ${newTotalStock}, stok tiktok: ${
+          selectedProduct.tiktok_stock + stockValues.tiktok
+        }, stok shopee: ${
+          selectedProduct.shopee_stock + stockValues.shopee
+        }, stok toko: ${selectedProduct.toko_stock + stockValues.toko}`
+      );
       closeModal();
     } catch (error) {
-      console.error('Failed to update stock:', error);
+      console.error("Failed to update stock:", error);
     } finally {
       setIsUpdating(false);
     }
@@ -169,7 +183,8 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
         <CardHeader>
           <CardTitle>Products List</CardTitle>
           <CardDescription>
-            Showing {startIndex + 1}-{Math.min(endIndex, products.length)} of {products.length} products
+            Showing {startIndex + 1}-{Math.min(endIndex, products.length)} of{" "}
+            {products.length} products
             {totalProducts !== products.length && ` (${totalProducts} total)`}
           </CardDescription>
         </CardHeader>
@@ -194,7 +209,10 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
               <TableBody>
                 {currentProducts.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={11} className="h-24 text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={11}
+                      className="h-24 text-center text-muted-foreground"
+                    >
                       No products found.
                     </TableCell>
                   </TableRow>
@@ -210,8 +228,12 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
 
                     return (
                       <TableRow key={product.id}>
-                        <TableCell className="font-medium">#{product.id}</TableCell>
-                        <TableCell className="font-medium">{product.name}</TableCell>
+                        <TableCell className="font-medium">
+                          #{product.id}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {product.name}
+                        </TableCell>
                         <TableCell>{formatCurrency(product.price)}</TableCell>
                         <TableCell className="text-center">
                           <span className={stockDisplays.total.className}>
@@ -237,10 +259,16 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                           <div className="flex items-center gap-2">
                             <div
                               className="w-4 h-4 rounded-full border border-gray-300"
-                              style={{ backgroundColor: getProductColorHex(product.color) }}
+                              style={{
+                                backgroundColor: getProductColorHex(
+                                  product.color
+                                ),
+                              }}
                               title={getProductColorDisplayName(product.color)}
                             />
-                            <span>{getProductColorDisplayName(product.color)}</span>
+                            <span>
+                              {getProductColorDisplayName(product.color)}
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell className="text-muted-foreground">
@@ -250,7 +278,9 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={stockStatus.variant}>{stockStatus.label}</Badge>
+                          <Badge variant={stockStatus.variant}>
+                            {stockStatus.label}
+                          </Badge>
                         </TableCell>
                         <TableCell className="text-center">
                           <Button
@@ -261,7 +291,8 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                             title="Manage Stock"
                             disabled={isAnyLoading || isUpdating}
                           >
-                            {isUpdating && selectedProduct?.id === product.id ? (
+                            {isUpdating &&
+                            selectedProduct?.id === product.id ? (
                               <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                             ) : (
                               <Package className="h-4 w-4" />
@@ -282,7 +313,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
               <div className="text-sm text-muted-foreground">
                 Page {currentPage} of {totalPages}
               </div>
-              
+
               <div className="flex items-center space-x-2">
                 {/* Previous Button */}
                 <Button
@@ -316,12 +347,12 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
 
                   {/* Show pages around current page */}
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
-                    .filter(page => {
+                    .filter((page) => {
                       if (totalPages <= 7) return true;
                       if (page === 1 || page === totalPages) return false;
                       return Math.abs(page - currentPage) <= 1;
                     })
-                    .map(page => (
+                    .map((page) => (
                       <Button
                         key={page}
                         variant={page === currentPage ? "default" : "outline"}
@@ -340,7 +371,9 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                         <span className="px-2 text-muted-foreground">...</span>
                       )}
                       <Button
-                        variant={totalPages === currentPage ? "default" : "outline"}
+                        variant={
+                          totalPages === currentPage ? "default" : "outline"
+                        }
                         size="sm"
                         onClick={() => goToPage(totalPages)}
                         className="h-8 w-8 p-0"
@@ -368,7 +401,12 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
       </Card>
 
       {/* Stock Management Modal */}
-      <Dialog open={isModalOpen} onOpenChange={(open) => !isUpdating && !isAnyLoading && !open && closeModal()}>
+      <Dialog
+        open={isModalOpen}
+        onOpenChange={(open) =>
+          !isUpdating && !isAnyLoading && !open && closeModal()
+        }
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -376,7 +414,8 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
               Manage Stock - {selectedProduct?.name}
             </DialogTitle>
             <DialogDescription>
-              Add stock to different platforms. Total stock will be reduced accordingly.
+              Add stock to different platforms. Total stock will be reduced
+              accordingly.
             </DialogDescription>
           </DialogHeader>
 
@@ -385,10 +424,30 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
             <div className="bg-muted p-3 rounded-lg">
               <div className="text-sm font-medium mb-2">Current Stock</div>
               <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>Total: <span className="font-medium">{selectedProduct?.total_stock || 0}</span></div>
-                <div>TikTok: <span className="font-medium">{selectedProduct?.tiktok_stock || 0}</span></div>
-                <div>Shopee: <span className="font-medium">{selectedProduct?.shopee_stock || 0}</span></div>
-                <div>Toko: <span className="font-medium">{selectedProduct?.toko_stock || 0}</span></div>
+                <div>
+                  Total:{" "}
+                  <span className="font-medium">
+                    {selectedProduct?.total_stock || 0}
+                  </span>
+                </div>
+                <div>
+                  TikTok:{" "}
+                  <span className="font-medium">
+                    {selectedProduct?.tiktok_stock || 0}
+                  </span>
+                </div>
+                <div>
+                  Shopee:{" "}
+                  <span className="font-medium">
+                    {selectedProduct?.shopee_stock || 0}
+                  </span>
+                </div>
+                <div>
+                  Toko:{" "}
+                  <span className="font-medium">
+                    {selectedProduct?.toko_stock || 0}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -397,14 +456,17 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
               {(["tiktok", "shopee", "toko"] as const).map((platform) => (
                 <div key={platform} className="space-y-2">
                   <Label htmlFor={`${platform}-stock`}>
-                    Add to {platform.charAt(0).toUpperCase() + platform.slice(1)} Stock
+                    Add to{" "}
+                    {platform.charAt(0).toUpperCase() + platform.slice(1)} Stock
                   </Label>
                   <Input
                     id={`${platform}-stock`}
                     type="number"
                     min="0"
                     value={stockValues[platform]}
-                    onChange={(e) => handleStockChange(platform, e.target.value)}
+                    onChange={(e) =>
+                      handleStockChange(platform, e.target.value)
+                    }
                     placeholder="0"
                     disabled={isUpdating || isAnyLoading}
                   />
@@ -415,10 +477,18 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
             {/* Preview */}
             {totalStockToDeduct > 0 && (
               <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
-                <div className="text-sm font-medium text-blue-800 mb-1">Preview Changes</div>
+                <div className="text-sm font-medium text-blue-800 mb-1">
+                  Preview Changes
+                </div>
                 <div className="text-sm text-blue-700">
-                  <div>Stock to distribute: <span className="font-medium">{totalStockToDeduct}</span></div>
-                  <div>New total stock: <span className="font-medium">{newTotalStock}</span></div>
+                  <div>
+                    Stock to distribute:{" "}
+                    <span className="font-medium">{totalStockToDeduct}</span>
+                  </div>
+                  <div>
+                    New total stock:{" "}
+                    <span className="font-medium">{newTotalStock}</span>
+                  </div>
                 </div>
                 {newTotalStock === 0 && (
                   <div className="text-xs text-amber-600 mt-1">
@@ -432,15 +502,16 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
             {totalStockToDeduct > (selectedProduct?.total_stock || 0) && (
               <div className="bg-red-50 border border-red-200 p-3 rounded-lg">
                 <div className="text-sm text-red-700">
-                  Error: Cannot distribute more stock than available ({selectedProduct?.total_stock || 0})
+                  Error: Cannot distribute more stock than available (
+                  {selectedProduct?.total_stock || 0})
                 </div>
               </div>
             )}
           </div>
 
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={closeModal}
               disabled={isUpdating || isAnyLoading}
             >

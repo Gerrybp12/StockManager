@@ -8,6 +8,7 @@ import { useNavigation } from "@/hooks/useNavigation";
 import { createClient } from "@/utils/supabase/client";
 import { UserProfile } from "@/types/user";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import newLog from "@/hooks/useLog";
 
 export default function Home() {
   const [addProductOpen, setAddProductOpen] = useState(false);
@@ -70,6 +71,10 @@ export default function Home() {
       if (error) {
         alert("Error: " + error.message);
       } else {
+        newLog(
+          "Penambahan produk",
+          `Penambahan produk dengan id ... warna ${colorSelected}`
+        );
         alert("Product added!");
         setName("");
         setPrice("");

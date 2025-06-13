@@ -28,6 +28,7 @@ import { getProfile } from "../../login/actions";
 import { CartProduct } from "@/types/cart";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/router";
+import newLog from "@/hooks/useLog";
 
 const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
   const params = useParams<{ role: string }>();
@@ -94,7 +95,14 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
         } else {
           handleAddStockToko(cartProduct);
         }
+        newLog(
+          "Pembelian di " + role,
+          `Pengurangan stok ${role} produk ${cartProduct.id} dari ${
+            cartProduct.initial_stock
+          } menjadi ${cartProduct.initial_stock - cartProduct.quantity}`
+        );
       }
+
       setPopup(true);
     } catch (error) {
       alert("Failed to update stock");
