@@ -26,12 +26,13 @@ import {
 } from "@/utils/productUtils";
 import { CartProduct } from "@/types/cart";
 import { useParams } from "next/navigation";
-import newLog from "@/hooks/useLog";
+import { useLog } from "@/hooks/useLog";
 
 const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
   const params = useParams<{ role: string }>();
   const role = params.role;
-  
+  const { newLog } = useLog(false);
+
   const {
     filteredProducts,
     loading,
@@ -49,7 +50,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
   const [updating, setUpdating] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const { cart, addProduct } = useCart();
-  
+
   const totalHarga = cart.reduce(
     (sum, cartProduct) => sum + cartProduct.price * cartProduct.quantity,
     0
@@ -89,7 +90,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
         } else {
           await handleAddStockToko(cartProduct);
         }
-        
+
         newLog(
           "Pembelian di " + role,
           `Pengurangan stok ${role} produk ${cartProduct.id} dari ${
@@ -131,7 +132,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
   return (
     <div className="min-h-screen bg-gray-50">
       <FloatingNavigation />
-      
+
       {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-sm">
@@ -173,17 +174,19 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">
               Cart - {role?.toUpperCase()}
             </h1>
-            <p className="text-gray-600 mt-1">
-              Kelola keranjang belanja Anda
-            </p>
+            <p className="text-gray-600 mt-1">Kelola keranjang belanja Anda</p>
           </div>
           <Button
             onClick={handleRefresh}
-            disabled={loading || isLoading('refresh')}
+            disabled={loading || isLoading("refresh")}
             variant="outline"
             className="gap-2"
           >
-            <RefreshCcw className={`h-4 w-4 ${(loading || isLoading('refresh')) ? 'animate-spin' : ''}`} />
+            <RefreshCcw
+              className={`h-4 w-4 ${
+                loading || isLoading("refresh") ? "animate-spin" : ""
+              }`}
+            />
             Refresh
           </Button>
         </div>
@@ -221,7 +224,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
                 <CardTitle className="text-xl flex items-center justify-between">
                   Keranjang
                   <span className="text-sm font-normal bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                    {cart.length} item{cart.length !== 1 ? 's' : ''}
+                    {cart.length} item{cart.length !== 1 ? "s" : ""}
                   </span>
                 </CardTitle>
               </CardHeader>
@@ -244,7 +247,9 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
                       </svg>
                     </div>
                     <p>Keranjang masih kosong</p>
-                    <p className="text-sm">Tambahkan produk untuk melanjutkan</p>
+                    <p className="text-sm">
+                      Tambahkan produk untuk melanjutkan
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -309,7 +314,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
                           Processing...
                         </>
                       ) : (
-                        'Checkout'
+                        "Checkout"
                       )}
                     </Button>
                   </div>

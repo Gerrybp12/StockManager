@@ -37,7 +37,7 @@ import {
   getProductColorHex,
   getProductColorDisplayName,
 } from "@/utils/productUtils";
-import newLog from "@/hooks/useLog";
+import { useLog } from "@/hooks/useLog";
 
 interface ProductsTableProps {
   products: Product[];
@@ -68,6 +68,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
   updateProduct,
   isAnyLoading = false,
 }) => {
+  const { newLog } = useLog(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [stockValues, setStockValues] =
     useState<StockUpdate>(INITIAL_STOCK_VALUES);

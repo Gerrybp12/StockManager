@@ -11,9 +11,16 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, BarChart3, ShoppingBag, Store, Truck } from "lucide-react";
+import {
+  Plus,
+  BarChart3,
+  ShoppingBag,
+  Store,
+  Truck,
+  History,
+} from "lucide-react";
 import { FloatingNavigation } from "@/components/ui/floating-buttons";
-import newLog from "@/hooks/useLog";
+import { useLog } from "@/hooks/useLog";
 
 export default function Home() {
   const [addProductOpen, setAddProductOpen] = useState(false);
@@ -31,6 +38,7 @@ export default function Home() {
 
   // Fixed destructuring syntax
   const { navigateTo, isLoading, isAnyLoading } = useNavigation();
+  const { newLog } = useLog(false);
 
   useEffect(() => {
     loadProfile();
@@ -137,7 +145,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       {/* Floating Navigation Buttons */}
-      <FloatingNavigation 
+      <FloatingNavigation
         showBack={false} // Home page doesn't need back button
         showProfile={true}
         disabled={isAnyLoading}
@@ -197,7 +205,9 @@ export default function Home() {
         {/* Platform Access */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-center text-2xl">Sales Platforms</CardTitle>
+            <CardTitle className="text-center text-2xl">
+              Sales Platforms
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -220,6 +230,20 @@ export default function Home() {
                   );
                 })}
             </div>
+          </CardContent>
+        </Card>
+        <Card className="mb-8">
+          <CardContent>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => navigateTo("/log", "log")}
+              disabled={isAnyLoading}
+              className="h-16 w-full text-base font-medium"
+            >
+              <History />
+              Riwayat Log
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -303,8 +327,8 @@ export default function Home() {
                               type="button"
                               size="sm"
                               className={`w-10 h-10 rounded-full border-2 transition-all ${
-                                colorSelected === name 
-                                  ? "border-gray-900 scale-110" 
+                                colorSelected === name
+                                  ? "border-gray-900 scale-110"
                                   : "border-gray-300 hover:border-gray-400"
                               }`}
                               onClick={() => setColorSelected(name)}

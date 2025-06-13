@@ -1,5 +1,6 @@
-import { supabase } from '@/lib/supabaseClient';
-import { Product } from '@/types/product';
+import { supabase } from "@/lib/supabaseClient";
+import { Log } from "@/types/log";
+import { Product } from "@/types/product";
 
 // Product service functions
 export const productService = {
@@ -15,23 +16,37 @@ export const productService = {
 
     return data || [];
   },
+  async fetchLogs(): Promise<Log[]> {
+    const { data, error } = await supabase
+      .from("log")
+      .select("*")
+      .order("timestamp", { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch log: ${error.message}`);
+    }
+
+    return data || [];
+  },
 
   async fetchProductById(id: number): Promise<Product | null> {
     const { data, error } = await supabase
       .from("products")
       .select("*")
-      .eq('id', id)
+      .eq("id", id)
       .single();
 
     if (error) {
-      if (error.code === 'PGRST116') return null; // Not found
+      if (error.code === "PGRST116") return null; // Not found
       throw new Error(`Failed to fetch product: ${error.message}`);
     }
 
     return data;
   },
 
-  async createProduct(product: Omit<Product, 'id' | 'created_at'>): Promise<Product> {
+  async createProduct(
+    product: Omit<Product, "id" | "created_at">
+  ): Promise<Product> {
     const { data, error } = await supabase
       .from("products")
       .insert([product])
@@ -49,7 +64,7 @@ export const productService = {
     const { data, error } = await supabase
       .from("products")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -61,17 +76,16 @@ export const productService = {
   },
 
   async deleteProduct(id: number): Promise<void> {
-    const { error } = await supabase
-      .from("products")
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from("products").delete().eq("id", id);
 
     if (error) {
       throw new Error(`Failed to delete product: ${error.message}`);
     }
   },
 
-  async createMultipleProducts(products: Omit<Product, 'id' | 'created_at'>[]): Promise<Product[]> {
+  async createMultipleProducts(
+    products: Omit<Product, "id" | "created_at">[]
+  ): Promise<Product[]> {
     const { data, error } = await supabase
       .from("products")
       .insert(products)
@@ -84,7 +98,10 @@ export const productService = {
     return data || [];
   },
 
-  async fetchProductsPaginated(page: number = 0, limit: number = 10): Promise<{
+  async fetchProductsPaginated(
+    page: number = 0,
+    limit: number = 10
+  ): Promise<{
     data: Product[];
     count: number | null;
   }> {
@@ -93,7 +110,7 @@ export const productService = {
 
     const { data, error, count } = await supabase
       .from("products")
-      .select("*", { count: 'exact' })
+      .select("*", { count: "exact" })
       .order("created_at", { ascending: false })
       .range(from, to);
 
@@ -103,7 +120,7 @@ export const productService = {
 
     return {
       data: data || [],
-      count
+      count,
     };
   },
 
@@ -119,5 +136,5 @@ export const productService = {
     }
 
     return data || [];
-  }
+  },
 };

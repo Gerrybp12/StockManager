@@ -3,11 +3,11 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { Product, ProductsPageProps } from '@/types/product';
-import { useProducts } from '@/hooks/useProducts';
-import StatsCards from '@/components/dashboard/StatsCards';
-import ProductFilters from '@/components/dashboard/ProductFilters';
-import ProductsTable from '@/components/dashboard/ProductsTable';
+import { Product, ProductsPageProps } from "@/types/product";
+import { useProducts } from "@/hooks/useProducts";
+import StatsCards from "@/components/dashboard/StatsCards";
+import ProductFilters from "@/components/dashboard/ProductFilters";
+import ProductsTable from "@/components/dashboard/ProductsTable";
 
 const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
   const {
@@ -22,7 +22,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
     setStockFilter,
     stats,
     fetchProducts,
-    updateProduct
+    updateProduct,
   } = useProducts();
 
   if (error) {
@@ -36,7 +36,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
     );
   }
 
-   // Global loading state - tracks if any operation is in progress
+  // Global loading state - tracks if any operation is in progress
   const [isAnyLoading, setIsAnyLoading] = React.useState(false);
 
   // Wrapper for updateProduct with global loading state
