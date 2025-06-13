@@ -1,6 +1,59 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// Define your route permissions
+const ROUTE_PERMISSIONS = {
+  '/cart/tiktok': ['tiktok', 'manager'],
+  '/cart/shopee': ['shopee', 'manager'],
+  '/cart/toko'  : ['toko', 'manager'],
+} as const
+
+// Helper function to get user role
+async function getUserRole(supabase: any, userId: string) {
+  try {
+    // Option 1: If role is stored in auth.users metadata
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user?.user_metadata?.role) {
+      return user.user_metadata.role
+    }
+
+    // Option 2: If role is stored in a separate profiles/users table
+    const { data: profile, error } = await supabase
+      .from('users') // or 'users' table
+      .select('role')
+      .eq('id', userId)
+      .single()
+
+    if (error) {
+      console.error('Error fetching user role:', error)
+      return null
+    }
+
+    return profile?.role || 'user' // default to 'user' role
+  } catch (error) {
+    console.error('Error in getUserRole:', error)
+    return null
+  }
+}
+
+// Helper function to check if user has permission for route
+function hasRoutePermission(userRole: string, pathname: string): boolean {
+  // Check exact route match first
+  if (ROUTE_PERMISSIONS[pathname as keyof typeof ROUTE_PERMISSIONS]) {
+    return ROUTE_PERMISSIONS[pathname as keyof typeof ROUTE_PERMISSIONS].includes(userRole as any)
+  }
+
+  // Check for nested routes (e.g., /admin/something)
+  for (const [route, allowedRoles] of Object.entries(ROUTE_PERMISSIONS)) {
+    if (pathname.startsWith(route + '/') || pathname === route) {
+      return allowedRoles.includes(userRole as any)
+    }
+  }
+
+  // If no specific route permission is defined, allow all authenticated users
+  return true
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -27,20 +80,22 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // Do not run code between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-
   // IMPORTANT: DO NOT REMOVE auth.getUser()
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
+  const pathname = request.nextUrl.pathname
+
+  // Allow access to unauthorized page for all authenticated users
+  if (pathname === '/unauthorized') {
+    return supabaseResponse
+  }
+
   // Redirect authenticated users away from login/auth pages
   if (
     user &&
-    (request.nextUrl.pathname.startsWith('/login') || 
-     request.nextUrl.pathname.startsWith('/auth'))
+    (pathname.startsWith('/login') || pathname.startsWith('/auth'))
   ) {
     const url = request.nextUrl.clone()
     url.pathname = '/'
@@ -50,26 +105,33 @@ export async function updateSession(request: NextRequest) {
   // Redirect unauthenticated users to login page (except for auth-related pages)
   if (
     !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth')
+    !pathname.startsWith('/login') &&
+    !pathname.startsWith('/auth') &&
+    !pathname.startsWith('/api/auth') // Allow auth API routes
   ) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // IMPORTANT: You *must* return the supabaseResponse object as it is.
-  // If you're creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object to fit your needs, but avoid changing
-  //    the cookies!
-  // 4. Finally:
-  //    return myNewResponse
-  // If this is not done, you may be causing the browser and server to go out
-  // of sync and terminate the user's session prematurely!
+  // Role-based route protection for authenticated users
+  if (user) {
+    const userRole = await getUserRole(supabase, user.id)
+    
+    if (!userRole) {
+      // If we can't determine the user role, redirect to a safe page
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
+
+    // Check if user has permission to access the current route
+    if (!hasRoutePermission(userRole, pathname)) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/unauthorized'
+      return NextResponse.redirect(url)
+    }
+  }
 
   return supabaseResponse
 }
