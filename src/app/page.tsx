@@ -8,6 +8,11 @@ import { useNavigation } from "@/hooks/useNavigation";
 import { createClient } from "@/utils/supabase/client";
 import { UserProfile } from "@/types/user";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Plus, BarChart3, ShoppingBag, Store, Truck } from "lucide-react";
+import { FloatingNavigation } from "@/components/ui/floating-buttons";
 import newLog from "@/hooks/useLog";
 
 export default function Home() {
@@ -26,7 +31,6 @@ export default function Home() {
 
   // Fixed destructuring syntax
   const { navigateTo, isLoading, isAnyLoading } = useNavigation();
-  const buttonClass = "py-10 px-20";
 
   useEffect(() => {
     loadProfile();
@@ -81,7 +85,7 @@ export default function Home() {
         setStock("");
         setModal("");
         setColorSelected("burgundiMaron");
-        setAddProductOpen(false); // Close modal on success
+        setAddProductOpen(false);
       }
     } catch (error) {
       alert("An unexpected error occurred");
@@ -90,160 +94,249 @@ export default function Home() {
     }
   };
 
+  const mainButtons = [
+    {
+      icon: Plus,
+      label: "Add Product",
+      onClick: () => setAddProductOpen(true),
+      variant: "default" as const,
+    },
+    {
+      icon: BarChart3,
+      label: "Dashboard",
+      onClick: () => navigateTo("/dashboard", "dashboard"),
+      variant: "outline" as const,
+      loading: isLoading("dashboard"),
+    },
+  ];
+
+  const platformButtons = [
+    {
+      icon: ShoppingBag,
+      label: "TikTok",
+      onClick: () => navigateTo("/cart/tiktok", "cart"),
+      show: profile?.role === "tiktok" || profile?.role === "manager",
+      variant: "secondary" as const,
+    },
+    {
+      icon: Store,
+      label: "Shopee",
+      onClick: () => navigateTo("/cart/shopee", "cart"),
+      show: profile?.role === "shopee" || profile?.role === "manager",
+      variant: "secondary" as const,
+    },
+    {
+      icon: Truck,
+      label: "Toko",
+      onClick: () => navigateTo("/cart/toko", "cart"),
+      show: profile?.role === "toko" || profile?.role === "manager",
+      variant: "secondary" as const,
+    },
+  ];
+
   return (
-    <div className="flex justify-center items-center h-screen flex-col gap-5">
-      {globalError && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertDescription className="flex items-center justify-between">
-            <span>{globalError}</span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={getProfile}
-              className="ml-4"
-            >
-              Try Again
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
-      <Button
-        className={buttonClass}
-        onClick={() => setAddProductOpen(true)}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+      {/* Floating Navigation Buttons */}
+      <FloatingNavigation 
+        showBack={false} // Home page doesn't need back button
+        showProfile={true}
         disabled={isAnyLoading}
-      >
-        Add Product
-      </Button>
-      <Button
-        className={buttonClass}
-        onClick={() => navigateTo("/dashboard", "dashboard")}
-        disabled={isAnyLoading}
-      >
-        {isLoading("dashboard") ? "Loading..." : "Dashboard"}
-      </Button>
-      <Button
-        className={buttonClass}
-        onClick={() => navigateTo("/profile", "profile")}
-        disabled={isAnyLoading}
-      >
-        {isLoading("profile") ? "Loading..." : "Profile"}
-      </Button>
+      />
 
-      {addProductOpen && (
-        <div
-          className="fixed inset-0 flex items-center justify-center z-50"
-          style={{
-            background: "rgba(49,49,49,0.8)",
-          }}
-        >
-          <div className="flex flex-col gap-3 p-10 rounded-md bg-white items-center justify-center">
-            <h1 className="">Add Product</h1>
-            <div className="flex flex-row">
-              <div className="flex flex-col">
-                <input
-                  type="text"
-                  placeholder="Product Name"
-                  className="border p-2 rounded my-0.5"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-                <input
-                  type="number"
-                  placeholder="Price"
-                  className="border p-2 rounded my-0.5"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  required
-                />
-                <input
-                  type="number"
-                  placeholder="Stock"
-                  className="border p-2 rounded my-0.5"
-                  value={stock}
-                  onChange={(e) => setStock(e.target.value)}
-                  required
-                />
-                <input
-                  type="number"
-                  placeholder="Modal"
-                  className="border p-2 rounded my-0.5"
-                  value={modal}
-                  onChange={(e) => setModal(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="flex flex-col">
-                <h1 className="border p-2 rounded my-0.5">
-                  Warna : {getProductColorDisplayName(colorSelected)}
-                </h1>
-                <div className="flex flex-wrap w-60">
-                  {(Object.entries(colors) as [string, string][]).map(
-                    ([name, hex]) => (
-                      <div key={name} className="text-center ">
-                        <Button
-                          className={`border-2 ${
-                            colorSelected === name ? "w-13 h-13" : ""
-                          }`}
-                          onClick={() => setColorSelected(name)}
-                          style={{ backgroundColor: hex }}
-                        ></Button>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            </div>
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Welcome to Your Dashboard
+          </h1>
+          <p className="text-lg text-gray-600">
+            Manage your products and sales efficiently
+          </p>
+        </div>
 
-            <div className="flex justify-end gap-2 mt-6">
+        {/* Error Alert */}
+        {globalError && (
+          <Alert variant="destructive" className="mb-8">
+            <AlertDescription className="flex items-center justify-between">
+              <span>{globalError}</span>
               <Button
-                type="button"
                 variant="outline"
-                onClick={() => setAddProductOpen(false)}
-                disabled={isSubmitting}
+                size="sm"
+                onClick={loadProfile}
+                className="ml-4"
               >
-                Cancel
+                Try Again
               </Button>
-              <Button
-                type="submit"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Adding..." : "Add Product"}
-              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Main Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          {mainButtons.map((button, index) => {
+            const Icon = button.icon;
+            return (
+              <Card key={index} className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-8">
+                  <Button
+                    size="lg"
+                    variant={button.variant}
+                    onClick={button.onClick}
+                    disabled={isAnyLoading}
+                    className="w-full h-20 text-lg font-semibold"
+                  >
+                    <Icon className="mr-3 h-6 w-6" />
+                    {button.loading ? "Loading..." : button.label}
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Platform Access */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="text-center text-2xl">Sales Platforms</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {platformButtons
+                .filter((button) => button.show)
+                .map((button, index) => {
+                  const Icon = button.icon;
+                  return (
+                    <Button
+                      key={index}
+                      size="lg"
+                      variant={button.variant}
+                      onClick={button.onClick}
+                      disabled={isAnyLoading}
+                      className="h-16 text-base font-medium"
+                    >
+                      <Icon className="mr-2 h-5 w-5" />
+                      {button.label}
+                    </Button>
+                  );
+                })}
             </div>
-          </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Add Product Modal */}
+      {addProductOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <Card className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <CardHeader>
+              <CardTitle className="text-2xl">Add New Product</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Product Details */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="name">Product Name</Label>
+                      <Input
+                        id="name"
+                        type="text"
+                        placeholder="Enter product name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="price">Price</Label>
+                      <Input
+                        id="price"
+                        type="number"
+                        placeholder="Enter price"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="stock">Stock</Label>
+                      <Input
+                        id="stock"
+                        type="number"
+                        placeholder="Enter stock quantity"
+                        value={stock}
+                        onChange={(e) => setStock(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="modal">Modal</Label>
+                      <Input
+                        id="modal"
+                        type="number"
+                        placeholder="Enter modal amount"
+                        value={modal}
+                        onChange={(e) => setModal(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Color Selection */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Selected Color</Label>
+                      <div className="p-3 border rounded-md bg-gray-50">
+                        <span className="font-medium">
+                          {getProductColorDisplayName(colorSelected)}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Choose Color</Label>
+                      <div className="grid grid-cols-6 gap-2 p-4 border rounded-md bg-gray-50">
+                        {(Object.entries(colors) as [string, string][]).map(
+                          ([name, hex]) => (
+                            <Button
+                              key={name}
+                              type="button"
+                              size="sm"
+                              className={`w-10 h-10 rounded-full border-2 transition-all ${
+                                colorSelected === name 
+                                  ? "border-gray-900 scale-110" 
+                                  : "border-gray-300 hover:border-gray-400"
+                              }`}
+                              onClick={() => setColorSelected(name)}
+                              style={{ backgroundColor: hex }}
+                              title={getProductColorDisplayName(name)}
+                            />
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Form Actions */}
+                <div className="flex justify-end gap-3 pt-6 border-t">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setAddProductOpen(false)}
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Adding..." : "Add Product"}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       )}
-      <div className="flex flex-row gap-4">
-        {(profile?.role == "tiktok" || profile?.role == "manager") && (
-          <Button
-            className={buttonClass}
-            onClick={() => navigateTo("/cart/tiktok", "cart")}
-            disabled={isAnyLoading}
-          >
-            {isLoading("dashboard") ? "Loading..." : "Tiktok"}
-          </Button>
-        )}
-        {(profile?.role == "shopee" || profile?.role == "manager") && (
-          <Button
-            className={buttonClass}
-            onClick={() => navigateTo("/cart/shopee", "cart")}
-            disabled={isAnyLoading}
-          >
-            {isLoading("dashboard") ? "Loading..." : "Shopee"}
-          </Button>
-        )}
-        {(profile?.role == "toko" || profile?.role == "manager") && (
-          <Button
-            className={buttonClass}
-            onClick={() => navigateTo("/cart/toko", "cart")}
-            disabled={isAnyLoading}
-          >
-            {isLoading("dashboard") ? "Loading..." : "Tiktok"}
-          </Button>
-        )}
-      </div>
     </div>
   );
 }
