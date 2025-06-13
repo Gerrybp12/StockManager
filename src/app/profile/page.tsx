@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { getProfile } from "@/app/login/actions";
 import { useNavigation } from "@/hooks/useNavigation";
-import { ArrowLeft, User, Mail, Shield, LogOut } from "lucide-react";
+import { User, Mail, Shield, LogOut } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Button } from "@/components/ui/button";
+import { FloatingBackButton } from "@/components/ui/floating-buttons";
 import {
   Card,
   CardContent,
@@ -28,7 +29,7 @@ export default function ProfilePage() {
   const [globalError, setGlobalError] = useState<string | null>(null);
 
   const supabase = createClient();
-  const { navigateTo, isLoading } = useNavigation();
+  const { navigateTo, isLoading, isAnyLoading } = useNavigation();
 
   useEffect(() => {
     loadProfile();
@@ -71,18 +72,18 @@ export default function ProfilePage() {
     }
   }
 
-  function handleBack() {
-    navigateTo("/", "back");
-  }
-
   function getRoleBadgeVariant(role: string) {
     switch (role.toLowerCase()) {
       case "admin":
         return "destructive";
-      case "moderator":
+      case "manager":
+        return "default";
+      case "tiktok":
+      case "shopee":
+      case "toko":
         return "secondary";
       default:
-        return "default";
+        return "outline";
     }
   }
 
@@ -91,19 +92,21 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8">
-      <div className="max-w-2xl mx-auto">
-        {/* Header with Back Button */}
-        <div className="mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBack}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+      {/* Floating Back Button */}
+      <FloatingBackButton 
+        disabled={isAnyLoading}
+      />
+
+      <div className="max-w-2xl mx-auto pt-20">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Profile Settings
+          </h1>
+          <p className="text-lg text-gray-600">
+            Manage your account information
+          </p>
         </div>
 
         {/* Error Alert */}
@@ -125,94 +128,90 @@ export default function ProfilePage() {
 
         {/* Profile Card */}
         {profile && user ? (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Account Details
+          <Card className="shadow-lg">
+            <CardHeader className="text-center pb-4">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <User className="h-10 w-10 text-white" />
+              </div>
+              <CardTitle className="text-2xl">
+                {profile.username}
               </CardTitle>
-              <CardDescription>
-                Your personal information and account settings
+              <CardDescription className="text-base">
+                Account information and settings
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-6">
-              {/* Username */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Username
-                </label>
-                <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{profile.username}</span>
-                </div>
-              </div>
-
               {/* Email */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
                   Email Address
                 </label>
-                <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{profile.email}</span>
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border">
+                  <Mail className="h-5 w-5 text-gray-500" />
+                  <span className="font-medium text-gray-900">{profile.email}</span>
                 </div>
               </div>
 
               {/* Role */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
                   Account Role
                 </label>
-                <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                  <Shield className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border">
+                  <Shield className="h-5 w-5 text-gray-500" />
                   <Badge
                     variant={getRoleBadgeVariant(profile.role)}
-                    className="capitalize"
+                    className="capitalize text-sm px-3 py-1"
                   >
                     {profile.role}
                   </Badge>
                 </div>
               </div>
 
-              {/* User ID (from Supabase Auth) */}
-              {/* <div className="space-y-2">
-                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  User ID
-                </label>
-                <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                  <Shield className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-mono text-sm text-muted-foreground">{user.id}</span>
-                </div>
-              </div> */}
+              <Separator className="my-8" />
 
-              <Separator />
-
-              {/* Actions */}
+              {/* Logout Section */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Logout</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Account Actions
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Sign out of your account to secure your session.
+                </p>
 
                 <Button
                   onClick={signOut}
                   disabled={isLoading("logout")}
                   variant="destructive"
-                  className="w-full"
+                  className="w-full h-12 text-base font-semibold"
                   size="lg"
                 >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  {isLoading("logout") ? "Logging out..." : "Logout"}
+                  <LogOut className="h-5 w-5 mr-2" />
+                  {isLoading("logout") ? "Logging out..." : "Sign Out"}
                 </Button>
               </div>
             </CardContent>
           </Card>
         ) : (
-          <Card>
-            <CardContent className="flex items-center justify-center py-12">
+          <Card className="shadow-lg">
+            <CardContent className="flex items-center justify-center py-16">
               <div className="text-center">
-                <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No profile found</p>
-                <Button onClick={loadProfile} variant="outline" className="mt-4">
-                  Refresh
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <User className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  No Profile Found
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Unable to load your profile information.
+                </p>
+                <Button 
+                  onClick={loadProfile} 
+                  variant="outline" 
+                  className="px-6"
+                >
+                  Try Again
                 </Button>
               </div>
             </CardContent>
