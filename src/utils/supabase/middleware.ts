@@ -5,7 +5,17 @@ import { NextResponse, type NextRequest } from 'next/server'
 const ROUTE_PERMISSIONS = {
   '/cart/tiktok': ['tiktok', 'manager'],
   '/cart/shopee': ['shopee', 'manager'],
-  '/cart/toko'  : ['toko', 'manager'],
+  '/cart/toko': ['toko', 'manager'],
+  '/': ['manager'],
+  '/profile' :['tiktok', 'shopee','toko', 'manager']
+} as const
+
+// Define default routes for each role
+const ROLE_DEFAULT_ROUTES = {
+  'tiktok': '/cart/tiktok',
+  'shopee': '/cart/shopee',
+  'toko': '/cart/toko',
+  'manager': '/'
 } as const
 
 // Helper function to get user role
@@ -19,7 +29,7 @@ async function getUserRole(supabase: any, userId: string) {
 
     // Option 2: If role is stored in a separate profiles/users table
     const { data: profile, error } = await supabase
-      .from('users') // or 'users' table
+      .from('users') // or 'profiles' table
       .select('role')
       .eq('id', userId)
       .single()
@@ -29,7 +39,7 @@ async function getUserRole(supabase: any, userId: string) {
       return null
     }
 
-    return profile?.role || 'user' // default to 'user' role
+    return profile?.role || null
   } catch (error) {
     console.error('Error in getUserRole:', error)
     return null
@@ -43,15 +53,25 @@ function hasRoutePermission(userRole: string, pathname: string): boolean {
     return ROUTE_PERMISSIONS[pathname as keyof typeof ROUTE_PERMISSIONS].includes(userRole as any)
   }
 
-  // Check for nested routes (e.g., /admin/something)
+  // Check for nested routes (e.g., /cart/tiktok/something)
   for (const [route, allowedRoles] of Object.entries(ROUTE_PERMISSIONS)) {
-    if (pathname.startsWith(route + '/') || pathname === route) {
+    if (pathname.startsWith(route + '/') && route !== '/') {
       return allowedRoles.includes(userRole as any)
     }
   }
 
-  // If no specific route permission is defined, allow all authenticated users
-  return true
+  // Special handling for root path nested routes
+  if (pathname.startsWith('/') && pathname !== '/' && ROUTE_PERMISSIONS['/']) {
+    return ROUTE_PERMISSIONS['/'].includes(userRole as any)
+  }
+
+  // If no specific route permission is defined, deny access by default
+  return false
+}
+
+// Helper function to get default route for user role
+function getDefaultRouteForRole(userRole: string): string {
+  return ROLE_DEFAULT_ROUTES[userRole as keyof typeof ROLE_DEFAULT_ROUTES] || '/unauthorized'
 }
 
 export async function updateSession(request: NextRequest) {
@@ -97,8 +117,15 @@ export async function updateSession(request: NextRequest) {
     user &&
     (pathname.startsWith('/login') || pathname.startsWith('/auth'))
   ) {
+    const userRole = await getUserRole(supabase, user.id)
     const url = request.nextUrl.clone()
-    url.pathname = '/'
+    
+    if (userRole) {
+      url.pathname = getDefaultRouteForRole(userRole)
+    } else {
+      url.pathname = '/unauthorized'
+    }
+    
     return NextResponse.redirect(url)
   }
 
@@ -119,16 +146,24 @@ export async function updateSession(request: NextRequest) {
     const userRole = await getUserRole(supabase, user.id)
     
     if (!userRole) {
-      // If we can't determine the user role, redirect to a safe page
+      // If we can't determine the user role, redirect to unauthorized page
       const url = request.nextUrl.clone()
-      url.pathname = '/login'
+      url.pathname = '/unauthorized'
       return NextResponse.redirect(url)
     }
 
     // Check if user has permission to access the current route
     if (!hasRoutePermission(userRole, pathname)) {
       const url = request.nextUrl.clone()
-      url.pathname = '/unauthorized'
+      
+      // If user is trying to access root and doesn't have permission,
+      // redirect to their default route
+      if (pathname === '/') {
+        url.pathname = getDefaultRouteForRole(userRole)
+      } else {
+        url.pathname = '/unauthorized'
+      }
+      
       return NextResponse.redirect(url)
     }
   }
