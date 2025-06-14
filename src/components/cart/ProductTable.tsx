@@ -1,5 +1,5 @@
-import React, { use, useState } from "react";
-import { useRouter } from "next/navigation";
+// Cart
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -15,16 +15,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, Edit, Plus } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { Product } from "@/types/product";
-import { useCart } from "@/hooks/useCart";
 import {
   formatCurrency,
-  formatDate,
-  getTotalStockStatus,
   getStockDisplay,
   getProductColorHex,
   getProductColorDisplayName,
@@ -46,6 +50,8 @@ interface ProductsTableProps {
   cart: CartProduct[];
 }
 
+const ITEMS_PER_PAGE_OPTIONS = [5, 10, 20, 50, 100];
+
 const ProductsTable: React.FC<ProductsTableProps> = ({
   products,
   totalProducts,
@@ -54,7 +60,6 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
   addProduct,
   cart,
 }) => {
-  const router = useRouter();
   const tiktok = role === "tiktok";
   const shopee = role === "shopee";
   const toko = role === "toko";
@@ -63,11 +68,24 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
   const [productDipilih, setProductDipilih] = useState<Product>();
   const [confirm, setConfirm] = useState(false);
   const [produkAda, setProdukAda] = useState(false);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentProducts = products.slice(startIndex, endIndex);
+  const hasNextPage = currentPage < totalPages;
+  const hasPrevPage = currentPage > 1;
 
   const handleProdukDouble = () => {
     setConfirm(true);
     setProdukAda(false);
   };
+  
   const handlePopup = (product: Product) => {
     if (cart[product.id] && !confirm) {
       setProdukAda(true);
@@ -112,6 +130,35 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
     setPopup(false);
     setConfirm(false);
   };
+
+  // Pagination functions
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
+  const goToPrevPage = () => {
+    if (hasPrevPage) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (hasNextPage) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    const newItemsPerPage = parseInt(value);
+    setItemsPerPage(newItemsPerPage);
+    // Reset to first page when changing items per page
+    setCurrentPage(1);
+  };
+
+  // Reset to first page when products change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [products.length]);
 
   if (loading) {
     return (
@@ -189,10 +236,40 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
         </div>
       )}
       <CardHeader>
-        <CardTitle>Products List</CardTitle>
-        <CardDescription>
-          {products.length} of {totalProducts} products
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Products List</CardTitle>
+            <CardDescription>
+              Showing {startIndex + 1}-{Math.min(endIndex, products.length)} of{" "}
+              {products.length} products
+              {totalProducts !== products.length &&
+                ` (${totalProducts} total)`}
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Label
+              htmlFor="items-per-page"
+              className="text-sm whitespace-nowrap"
+            >
+              Show:
+            </Label>
+            <Select
+              value={itemsPerPage.toString()}
+              onValueChange={handleItemsPerPageChange}
+            >
+              <SelectTrigger id="items-per-page" className="w-20">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+                  <SelectItem key={option} value={option.toString()}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border overflow-x-auto">
@@ -216,7 +293,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.length === 0 ? (
+              {currentProducts.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={10}
@@ -226,7 +303,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                   </TableCell>
                 </TableRow>
               ) : (
-                products.map((product) => {
+                currentProducts.map((product) => {
                   const tiktokStockDisplay = getStockDisplay(
                     product.tiktok_stock
                   );
@@ -298,6 +375,104 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
             </TableBody>
           </Table>
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-2 py-4">
+            <div className="text-sm text-muted-foreground">
+              Page {currentPage} of {totalPages}
+            </div>
+
+            <div className="flex items-center space-x-2">
+              {/* Previous Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={goToPrevPage}
+                disabled={!hasPrevPage}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              {/* Page Numbers */}
+              <div className="flex items-center space-x-1">
+                {/* Always show first page if not in visible range */}
+                {currentPage > 3 && (
+                  <>
+                    <Button
+                      variant={1 === currentPage ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => goToPage(1)}
+                      className="h-8 w-8 p-0"
+                    >
+                      1
+                    </Button>
+                    {currentPage > 4 && (
+                      <span className="px-2 text-muted-foreground">...</span>
+                    )}
+                  </>
+                )}
+
+                {/* Show pages around current page */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((page) => {
+                    // If total pages <= 7, show all pages
+                    if (totalPages <= 7) return true;
+
+                    // Don't show first/last page here (handled separately)
+                    if (page === 1 && currentPage > 3) return false;
+                    if (page === totalPages && currentPage < totalPages - 2)
+                      return false;
+
+                    // Show current page and adjacent pages
+                    return Math.abs(page - currentPage) <= 1;
+                  })
+                  .map((page) => (
+                    <Button
+                      key={page}
+                      variant={page === currentPage ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => goToPage(page)}
+                      className="h-8 w-8 p-0"
+                    >
+                      {page}
+                    </Button>
+                  ))}
+
+                {/* Always show last page if not in visible range */}
+                {currentPage < totalPages - 2 && totalPages > 7 && (
+                  <>
+                    {currentPage < totalPages - 3 && (
+                      <span className="px-2 text-muted-foreground">...</span>
+                    )}
+                    <Button
+                      variant={
+                        totalPages === currentPage ? "default" : "outline"
+                      }
+                      size="sm"
+                      onClick={() => goToPage(totalPages)}
+                      className="h-8 w-8 p-0"
+                    >
+                      {totalPages}
+                    </Button>
+                  </>
+                )}
+              </div>
+
+              {/* Next Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={goToNextPage}
+                disabled={!hasNextPage}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

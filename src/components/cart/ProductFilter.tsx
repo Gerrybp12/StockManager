@@ -8,8 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Filter, Palette } from "lucide-react";
-import { StockFilter } from "@/types/product";
+import { Search, Palette } from "lucide-react";
 import { getColorOptions } from "@/lib/colors";
 
 interface ProductFiltersProps {
