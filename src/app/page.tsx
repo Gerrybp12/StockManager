@@ -1,13 +1,10 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
-import { getProfile } from "./login/actions";
+import { useState } from "react";
 import colors from "@/lib/colors";
 import { getProductColorDisplayName } from "@/utils/productUtils";
 import { useNavigation } from "@/hooks/useNavigation";
 import { createClient } from "@/utils/supabase/client";
-import { UserProfile } from "@/types/user";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,42 +27,12 @@ export default function Home() {
   const [modal, setModal] = useState("");
   const [colorSelected, setColorSelected] = useState("burgundiMaron");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [globalError, setGlobalError] = useState<string | null>(null);
 
   const supabase = createClient();
 
   // Fixed destructuring syntax
   const { navigateTo, isLoading, isAnyLoading } = useNavigation();
   const { newLog } = useLog(false);
-
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
-  async function loadProfile() {
-    try {
-      setLoading(true);
-      setGlobalError(null);
-
-      const result = await getProfile();
-
-      if (result.error) {
-        setGlobalError(result.error);
-        if (result.error === "User not authenticated") {
-          navigateTo("/login", "login");
-        }
-        return;
-      }
-      setProfile(result.profile);
-    } catch (error) {
-      console.error("Error loading profile:", error);
-      setGlobalError("Failed to load profile");
-    } finally {
-      setLoading(false);
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,21 +90,18 @@ export default function Home() {
       icon: ShoppingBag,
       label: "TikTok",
       onClick: () => navigateTo("/cart/tiktok", "cart"),
-      show: profile?.role === "tiktok" || profile?.role === "manager",
       variant: "secondary" as const,
     },
     {
       icon: Store,
       label: "Shopee",
       onClick: () => navigateTo("/cart/shopee", "cart"),
-      show: profile?.role === "shopee" || profile?.role === "manager",
       variant: "secondary" as const,
     },
     {
       icon: Truck,
       label: "Toko",
       onClick: () => navigateTo("/cart/toko", "cart"),
-      show: profile?.role === "toko" || profile?.role === "manager",
       variant: "secondary" as const,
     },
   ];
@@ -162,23 +126,6 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Error Alert */}
-        {globalError && (
-          <Alert variant="destructive" className="mb-8">
-            <AlertDescription className="flex items-center justify-between">
-              <span>{globalError}</span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={loadProfile}
-                className="ml-4"
-              >
-                Try Again
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
-
         {/* Main Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {mainButtons.map((button, index) => {
@@ -194,7 +141,7 @@ export default function Home() {
                     className="w-full h-20 text-lg font-semibold"
                   >
                     <Icon className="mr-3 h-6 w-6" />
-                    {button.loading ? "Loading..." : button.label}
+                    {button.label}
                   </Button>
                 </CardContent>
               </Card>
@@ -211,24 +158,22 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {platformButtons
-                .filter((button) => button.show)
-                .map((button, index) => {
-                  const Icon = button.icon;
-                  return (
-                    <Button
-                      key={index}
-                      size="lg"
-                      variant={button.variant}
-                      onClick={button.onClick}
-                      disabled={isAnyLoading}
-                      className="h-16 text-base font-medium"
-                    >
-                      <Icon className="mr-2 h-5 w-5" />
-                      {button.label}
-                    </Button>
-                  );
-                })}
+              {platformButtons.map((button, index) => {
+                const Icon = button.icon;
+                return (
+                  <Button
+                    key={index}
+                    size="lg"
+                    variant={button.variant}
+                    onClick={button.onClick}
+                    disabled={isAnyLoading}
+                    className="h-16 text-base font-medium"
+                  >
+                    <Icon className="mr-2 h-5 w-5" />
+                    {button.label}
+                  </Button>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
