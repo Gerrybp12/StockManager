@@ -22,12 +22,25 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, Package, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Calendar,
+  Package,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+} from "lucide-react";
 import { Product } from "@/types/product";
 import {
   formatCurrency,
@@ -59,7 +72,7 @@ const INITIAL_STOCK_VALUES: StockUpdate = {
   toko: 0,
 };
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE_OPTIONS = [5, 10, 20, 50, 100];
 
 const ProductsTable: React.FC<ProductsTableProps> = ({
   products,
@@ -74,16 +87,21 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
     useState<StockUpdate>(INITIAL_STOCK_VALUES);
   const [isUpdating, setIsUpdating] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [addStockProduct, setAddStockProduct] = useState<Product | null>(null);
+  const [addStockAmount, setAddStockAmount] = useState(0);
+  const [isAddingStock, setIsAddingStock] = useState(false);
 
   // Pagination calculations
-  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
   const currentProducts = products.slice(startIndex, endIndex);
   const hasNextPage = currentPage < totalPages;
   const hasPrevPage = currentPage > 1;
 
   const isModalOpen = selectedProduct !== null;
+  const isAddStockModalOpen = addStockProduct !== null;
   const totalStockToDeduct = Object.values(stockValues).reduce(
     (sum, val) => sum + val,
     0
@@ -94,6 +112,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
   const canUpdate =
     totalStockToDeduct > 0 &&
     totalStockToDeduct <= (selectedProduct?.total_stock || 0);
+  const canAddStock = addStockAmount > 0;
 
   const openModal = (product: Product) => {
     setSelectedProduct(product);
@@ -103,6 +122,18 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
   const closeModal = () => {
     setSelectedProduct(null);
     setStockValues(INITIAL_STOCK_VALUES);
+  };
+
+  const openAddStockModal = (product: Product) => {
+    console.log("Opening add stock modal for product:", product.name); // Debug log
+    setAddStockProduct(product);
+    setAddStockAmount(0);
+  };
+
+  const closeAddStockModal = () => {
+    console.log("Closing add stock modal"); // Debug log
+    setAddStockProduct(null);
+    setAddStockAmount(0);
   };
 
   const handleStockChange = (platform: keyof StockUpdate, value: string) => {
@@ -139,6 +170,27 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
     }
   };
 
+  const handleAddStock = async () => {
+    if (!addStockProduct || !canAddStock) return;
+
+    setIsAddingStock(true);
+    try {
+      const newTotalStock = addStockProduct.total_stock + addStockAmount;
+      await updateProduct(addStockProduct.id as number, {
+        total_stock: newTotalStock,
+      });
+      newLog(
+        "Penambahan stok",
+        `Menambah ${addStockAmount} stok ke ${addStockProduct.name}. Total stok sekarang: ${newTotalStock}`
+      );
+      closeAddStockModal();
+    } catch (error) {
+      console.error("Failed to add stock:", error);
+    } finally {
+      setIsAddingStock(false);
+    }
+  };
+
   const goToPage = (page: number) => {
     setCurrentPage(Math.max(1, Math.min(page, totalPages)));
   };
@@ -155,6 +207,13 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
     }
   };
 
+  const handleItemsPerPageChange = (value: string) => {
+    const newItemsPerPage = parseInt(value);
+    setItemsPerPage(newItemsPerPage);
+    // Reset to first page when changing items per page
+    setCurrentPage(1);
+  };
+
   // Reset to first page when products change
   React.useEffect(() => {
     setCurrentPage(1);
@@ -162,19 +221,21 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
 
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Products List</CardTitle>
-          <CardDescription>Loading products...</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {Array.from({ length: 5 }, (_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <>
+        <Card>
+          <CardHeader>
+            <CardTitle>Products List</CardTitle>
+            <CardDescription>Loading products...</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {Array.from({ length: 5 }, (_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </>
     );
   }
 
@@ -182,20 +243,62 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Products List</CardTitle>
-          <CardDescription>
-            Showing {startIndex + 1}-{Math.min(endIndex, products.length)} of{" "}
-            {products.length} products
-            {totalProducts !== products.length && ` (${totalProducts} total)`}
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Products List</CardTitle>
+              <CardDescription>
+                Showing {startIndex + 1}-{Math.min(endIndex, products.length)}{" "}
+                of {products.length} products
+                {totalProducts !== products.length &&
+                  ` (${totalProducts} total)`}
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label
+                htmlFor="items-per-page"
+                className="text-sm whitespace-nowrap"
+              >
+                Show:
+              </Label>
+              <Select
+                value={itemsPerPage.toString()}
+                onValueChange={handleItemsPerPageChange}
+              >
+                <SelectTrigger id="items-per-page" className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+                    <SelectItem key={option} value={option.toString()}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
+          {/* Action Buttons Legend - Always visible */}
+          <div className="mb-4 p-3 bg-muted/50 rounded-lg border">
+            <div className="text-sm font-medium mb-2">Action Buttons:</div>
+            <div className="flex flex-wrap gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                <span>Add Total Stock</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Package className="h-4 w-4" />
+                <span>Distribute Stock to Platforms</span>
+              </div>
+            </div>
+          </div>
+
           <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
-                  <TableHead>Name</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead className="text-center">Total Stock</TableHead>
                   <TableHead className="text-center">TikTok</TableHead>
@@ -231,9 +334,6 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                       <TableRow key={product.id}>
                         <TableCell className="font-medium">
                           #{product.id}
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {product.name}
                         </TableCell>
                         <TableCell>{formatCurrency(product.price)}</TableCell>
                         <TableCell className="text-center">
@@ -284,21 +384,54 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                           </Badge>
                         </TableCell>
                         <TableCell className="text-center">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openModal(product)}
-                            className="h-8 w-8 p-0"
-                            title="Manage Stock"
-                            disabled={isAnyLoading || isUpdating}
-                          >
-                            {isUpdating &&
-                            selectedProduct?.id === product.id ? (
-                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                            ) : (
-                              <Package className="h-4 w-4" />
-                            )}
-                          </Button>
+                          <div className="flex items-center justify-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log(
+                                  "Plus button clicked for product:",
+                                  product.name
+                                );
+                                openAddStockModal(product);
+                              }}
+                              className="h-8 w-8 p-0"
+                              title="Add Total Stock"
+                              disabled={
+                                isAnyLoading || isUpdating || isAddingStock
+                              }
+                            >
+                              {isAddingStock &&
+                              addStockProduct?.id === product.id ? (
+                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                              ) : (
+                                <Plus className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                openModal(product);
+                              }}
+                              className="h-8 w-8 p-0"
+                              title="Distribute Stock"
+                              disabled={
+                                isAnyLoading || isUpdating || isAddingStock
+                              }
+                            >
+                              {isUpdating &&
+                              selectedProduct?.id === product.id ? (
+                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                              ) : (
+                                <Package className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
@@ -329,7 +462,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
 
                 {/* Page Numbers */}
                 <div className="flex items-center space-x-1">
-                  {/* Show first page */}
+                  {/* Always show first page if not in visible range */}
                   {currentPage > 3 && (
                     <>
                       <Button
@@ -349,8 +482,15 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                   {/* Show pages around current page */}
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
                     .filter((page) => {
+                      // If total pages <= 7, show all pages
                       if (totalPages <= 7) return true;
-                      if (page === 1 || page === totalPages) return false;
+
+                      // Don't show first/last page here (handled separately)
+                      if (page === 1 && currentPage > 3) return false;
+                      if (page === totalPages && currentPage < totalPages - 2)
+                        return false;
+
+                      // Show current page and adjacent pages
                       return Math.abs(page - currentPage) <= 1;
                     })
                     .map((page) => (
@@ -365,8 +505,8 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                       </Button>
                     ))}
 
-                  {/* Show last page */}
-                  {currentPage < totalPages - 2 && (
+                  {/* Always show last page if not in visible range */}
+                  {currentPage < totalPages - 2 && totalPages > 7 && (
                     <>
                       {currentPage < totalPages - 3 && (
                         <span className="px-2 text-muted-foreground">...</span>
@@ -401,7 +541,110 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
         </CardContent>
       </Card>
 
-      {/* Stock Management Modal */}
+      {/* Add Stock Modal */}
+      <Dialog
+        open={isAddStockModalOpen}
+        onOpenChange={(open) => {
+          console.log("Add stock modal onOpenChange:", open);
+          if (!isAddingStock && !isAnyLoading && !open) {
+            closeAddStockModal();
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5" />
+              Add Stock - {addStockProduct?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Add stock to the total inventory. This will increase the total
+              stock count.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Current Stock Info */}
+            <div className="bg-muted p-3 rounded-lg">
+              <div className="text-sm font-medium mb-2">
+                Current Total Stock
+              </div>
+              <div className="text-2xl font-bold">
+                {addStockProduct?.total_stock || 0}
+              </div>
+            </div>
+
+            {/* Add Stock Input */}
+            <div className="space-y-2">
+              <Label htmlFor="add-stock-amount">Amount to Add</Label>
+              <Input
+                id="add-stock-amount"
+                type="number"
+                min="1"
+                value={addStockAmount || ""}
+                onChange={(e) =>
+                  setAddStockAmount(parseInt(e.target.value) || 0)
+                }
+                placeholder="Enter amount to add"
+                disabled={isAddingStock || isAnyLoading}
+              />
+            </div>
+
+            {/* Preview */}
+            {addStockAmount > 0 && (
+              <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
+                <div className="text-sm font-medium text-green-800 mb-1">
+                  Preview Changes
+                </div>
+                <div className="text-sm text-green-700">
+                  <div>
+                    Current stock:{" "}
+                    <span className="font-medium">
+                      {addStockProduct?.total_stock || 0}
+                    </span>
+                  </div>
+                  <div>
+                    Adding:{" "}
+                    <span className="font-medium">+{addStockAmount}</span>
+                  </div>
+                  <div>
+                    New total stock:{" "}
+                    <span className="font-medium">
+                      {(addStockProduct?.total_stock || 0) + addStockAmount}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={closeAddStockModal}
+              disabled={isAddingStock || isAnyLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAddStock}
+              disabled={isAddingStock || isAnyLoading || !canAddStock}
+              className="min-w-[100px]"
+            >
+              {isAddingStock ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  Adding...
+                </div>
+              ) : (
+                "Add Stock"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Stock Distribution Modal */}
       <Dialog
         open={isModalOpen}
         onOpenChange={(open) =>
@@ -412,11 +655,11 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Package className="h-5 w-5" />
-              Manage Stock - {selectedProduct?.name}
+              Distribute Stock - {selectedProduct?.name}
             </DialogTitle>
             <DialogDescription>
-              Add stock to different platforms. Total stock will be reduced
-              accordingly.
+              Distribute stock from total inventory to different platforms.
+              Total stock will be reduced accordingly.
             </DialogDescription>
           </DialogHeader>
 
@@ -526,10 +769,10 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
               {isUpdating ? (
                 <div className="flex items-center gap-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Updating...
+                  Distributing...
                 </div>
               ) : (
-                "Update Stock"
+                "Distribute Stock"
               )}
             </Button>
           </DialogFooter>
