@@ -68,7 +68,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
   const [productDipilih, setProductDipilih] = useState<Product>();
   const [confirm, setConfirm] = useState(false);
   const [produkAda, setProdukAda] = useState(false);
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -85,7 +85,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
     setConfirm(true);
     setProdukAda(false);
   };
-  
+
   const handlePopup = (product: Product) => {
     if (cart[product.id] && !confirm) {
       setProdukAda(true);
@@ -242,8 +242,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
             <CardDescription>
               Showing {startIndex + 1}-{Math.min(endIndex, products.length)} of{" "}
               {products.length} products
-              {totalProducts !== products.length &&
-                ` (${totalProducts} total)`}
+              {totalProducts !== products.length && ` (${totalProducts} total)`}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -314,7 +313,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                   return (
                     <TableRow key={product.id}>
                       <TableCell className="font-medium">
-                        #{product.id}
+                        RF{product.product_id}
                       </TableCell>
                       <TableCell>{formatCurrency(product.price)}</TableCell>
                       {tiktok && (

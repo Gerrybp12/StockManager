@@ -22,7 +22,9 @@ export default colors;
 
 // Color utility functions
 export const getColorHex = (colorKey: string): string => {
-  const normalizedKey = colorKey.toLowerCase().replace(/\s+/g, '') as keyof typeof colors;
+  const normalizedKey = colorKey
+    .toLowerCase()
+    .replace(/\s+/g, "") as keyof typeof colors;
   return colors[normalizedKey] || colorKey; // fallback to original if not found
 };
 
@@ -46,16 +48,19 @@ export const getColorDisplayName = (colorKey: string): string => {
     lilak: "Lilak",
   };
 
-  const normalizedKey = colorKey.toLowerCase().replace(/\s+/g, '');
-  return colorMap[normalizedKey] || colorKey.charAt(0).toUpperCase() + colorKey.slice(1);
+  const normalizedKey = colorKey.toLowerCase().replace(/\s+/g, "");
+  return (
+    colorMap[normalizedKey] ||
+    colorKey.charAt(0).toUpperCase() + colorKey.slice(1)
+  );
 };
 
 export const getAllColors = () => colors;
 
 export const getColorOptions = () => {
-  return Object.keys(colors).map(key => ({
+  return Object.keys(colors).map((key) => ({
     key,
     hex: colors[key as keyof typeof colors],
-    displayName: getColorDisplayName(key)
+    displayName: getColorDisplayName(key),
   }));
 };

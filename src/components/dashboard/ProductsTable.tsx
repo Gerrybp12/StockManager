@@ -125,7 +125,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
   };
 
   const openAddStockModal = (product: Product) => {
-    console.log("Opening add stock modal for product:", product.name); // Debug log
+    console.log("Opening add stock modal for product:", product.product_id); // Debug log
     setAddStockProduct(product);
     setAddStockAmount(0);
   };
@@ -181,7 +181,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
       });
       newLog(
         "Penambahan stok",
-        `Menambah ${addStockAmount} stok ke ${addStockProduct.name}. Total stok sekarang: ${newTotalStock}`
+        `Menambah ${addStockAmount} stok ke ${addStockProduct.product_id}. Total stok sekarang: ${newTotalStock}`
       );
       closeAddStockModal();
     } catch (error) {
@@ -333,7 +333,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                     return (
                       <TableRow key={product.id}>
                         <TableCell className="font-medium">
-                          #{product.id}
+                          RF{product.product_id}
                         </TableCell>
                         <TableCell>{formatCurrency(product.price)}</TableCell>
                         <TableCell className="text-center">
@@ -393,7 +393,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                                 e.stopPropagation();
                                 console.log(
                                   "Plus button clicked for product:",
-                                  product.name
+                                  product.product_id
                                 );
                                 openAddStockModal(product);
                               }}
@@ -555,7 +555,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5" />
-              Add Stock - {addStockProduct?.name}
+              Add Stock - {addStockProduct?.product_id}
             </DialogTitle>
             <DialogDescription>
               Add stock to the total inventory. This will increase the total
@@ -655,7 +655,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Package className="h-5 w-5" />
-              Distribute Stock - {selectedProduct?.name}
+              Distribute Stock - {selectedProduct?.product_id}
             </DialogTitle>
             <DialogDescription>
               Distribute stock from total inventory to different platforms.

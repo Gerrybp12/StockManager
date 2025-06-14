@@ -18,29 +18,35 @@ import {
 } from "lucide-react";
 import { FloatingNavigation } from "@/components/ui/floating-buttons";
 import { useLog } from "@/hooks/useLog";
+import { useProducts } from "@/hooks/useProducts";
 
 export default function Home() {
   const [addProductOpen, setAddProductOpen] = useState(false);
-  const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [modal, setModal] = useState("");
-  const [colorSelected, setColorSelected] = useState("burgundiMaron");
+  const [colorSelected, setColorSelected] = useState("burgundimaron");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [id, setId] = useState("");
+  const [idValid, setIdValid] = useState(false);
 
+  const { products } = useProducts();
   const supabase = createClient();
 
   // Fixed destructuring syntax
   const { navigateTo, isLoading, isAnyLoading } = useNavigation();
   const { newLog } = useLog(false);
-
+  const colorKeys = Object.keys(colors);
+  let colorIndex = colorKeys.indexOf(colorSelected).toString();
+  while (colorIndex.length < 2) {
+    colorIndex = "0" + colorIndex;
+  }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
     try {
       const { error } = await supabase.from("products").insert({
-        name,
+        product_id: id + colorIndex,
         price: parseFloat(price),
         total_stock: parseInt(stock),
         color: colorSelected,
@@ -52,14 +58,13 @@ export default function Home() {
       } else {
         newLog(
           "Penambahan produk",
-          `Penambahan produk dengan id ... warna ${colorSelected}`
+          `Penambahan produk dengan id ${id} warna ${colorSelected}`
         );
         alert("Product added!");
-        setName("");
         setPrice("");
         setStock("");
         setModal("");
-        setColorSelected("burgundiMaron");
+        setColorSelected("burgundimaron");
         setAddProductOpen(false);
       }
     } catch (error) {
@@ -105,7 +110,6 @@ export default function Home() {
       variant: "secondary" as const,
     },
   ];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       {/* Floating Navigation Buttons */}
@@ -207,13 +211,22 @@ export default function Home() {
                   {/* Product Details */}
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="name">Product Name</Label>
+                      <Label htmlFor="id">ID</Label>
                       <Input
-                        id="name"
-                        type="text"
-                        placeholder="Enter product name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        id="id"
+                        type="number"
+                        placeholder={
+                          "Enter ID (" +
+                          (products.at(-1)?.product_id.substring(0, 5) ??
+                            "Produk pertama") +
+                          ")"
+                        }
+                        value={id}
+                        onChange={(e) => {
+                          setId(e.target.value);
+                          if (e.target.value.length === 5) setIdValid(true);
+                          else setIdValid(false);
+                        }}
                         required
                       />
                     </div>
@@ -292,12 +305,15 @@ export default function Home() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setAddProductOpen(false)}
+                    onClick={() => {
+                      setAddProductOpen(false);
+                      setIdValid(false);
+                    }}
                     disabled={isSubmitting}
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
+                  <Button type="submit" disabled={isSubmitting || !idValid}>
                     {isSubmitting ? "Adding..." : "Add Product"}
                   </Button>
                 </div>
