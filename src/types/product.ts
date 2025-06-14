@@ -2,7 +2,6 @@
 
 export interface Product {
   id: number;
-  name: string;
   price: number;
   total_stock: number;
   tiktok_stock: number;

@@ -277,7 +277,6 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Name</TableHead>
                 <TableHead>Price</TableHead>
                 {tiktok && (
                   <TableHead className="text-center">TikTok Stock</TableHead>
@@ -316,9 +315,6 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                     <TableRow key={product.id}>
                       <TableCell className="font-medium">
                         #{product.id}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {product.name}
                       </TableCell>
                       <TableCell>{formatCurrency(product.price)}</TableCell>
                       {tiktok && (
