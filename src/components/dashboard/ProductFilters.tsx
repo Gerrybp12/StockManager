@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -17,6 +18,7 @@ import {
   Search,
   Filter,
   Palette,
+  X,
 } from "lucide-react";
 import { StockFilter } from '@/types/product';
 import { getColorOptions } from '@/lib/colors';
@@ -40,10 +42,33 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
 }) => {
   const colorOptions = getColorOptions();
   
+  // Check if any filters are active
+  const hasActiveFilters = searchTerm !== '' || colorFilter !== 'all' || stockFilter !== 'all';
+  
+  // Clear all filters function
+  const clearAllFilters = () => {
+    onSearchChange('');
+    onColorFilterChange('all');
+    onStockFilterChange('all');
+  };
+  
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Filters</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg">Filters</CardTitle>
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearAllFilters}
+              className="h-8 px-3"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Clear All
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col sm:flex-row gap-4">
@@ -51,7 +76,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
             <div className="relative">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search products..."
+                placeholder="Search by product ID (e.g., RF001, 001)..."
                 className="pl-8"
                 value={searchTerm}
                 onChange={(e) => onSearchChange(e.target.value)}

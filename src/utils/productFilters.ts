@@ -6,7 +6,7 @@ export const filterProductsBySearch = (products: Product[], searchTerm: string):
   if (!searchTerm) return products;
   
   return products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    product.product_id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 };
 

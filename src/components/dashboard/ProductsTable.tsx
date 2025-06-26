@@ -321,7 +321,10 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                     </TableCell>
                   </TableRow>
                 ) : (
-                  currentProducts.map((product) => {
+                  currentProducts.map((product, index) => {
+                    // Create a unique key using multiple properties as fallback
+                    const uniqueKey = product.id || `${product.product_id}-${startIndex + index}`;
+                    
                     const stockStatus = getTotalStockStatus(product);
                     const stockDisplays = {
                       total: getStockDisplay(product.total_stock),
@@ -331,7 +334,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                     };
 
                     return (
-                      <TableRow key={product.id}>
+                      <TableRow key={uniqueKey}>
                         <TableCell className="font-medium">
                           RF{product.product_id}
                         </TableCell>
