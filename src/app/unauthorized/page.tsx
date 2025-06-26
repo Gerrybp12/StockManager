@@ -7,7 +7,7 @@ export default function Unauthorized() {
   const [countdown, setCountdown] = useState(5)
   const [isRedirecting, setIsRedirecting] = useState(false)
   const router = useRouter()
- 
+  
   const handleRedirect = () => {
     if (!isRedirecting) {
       setIsRedirecting(true)
@@ -34,7 +34,7 @@ export default function Unauthorized() {
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [])
+  }, [handleRedirect]) // Added handleRedirect to the dependency array
 
   if (isRedirecting) {
     return (
@@ -63,7 +63,7 @@ export default function Unauthorized() {
           
           {/* Message */}
           <p className="text-gray-600 mb-6">
-            You don't have permission to view this page.
+            You don&apos;t have permission to view this page.
           </p>
           
           {/* Countdown */}

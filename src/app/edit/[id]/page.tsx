@@ -4,18 +4,11 @@ import { useProducts } from "@/hooks/useProducts";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
-type Product = {
-  id: number;
-  name: string;
-  price: number;
-};
-
-export default function editPage() {
+export default function EditPage() {
   const params = useParams<{ id: string }>();
   const id = parseInt(params.id);
   const [jumlahPembelian, setJumlahPembelian] = useState("");
-  const { updateProduct, fetchProducts, products, searchProducts } =
-    useProducts();
+  const { updateProduct, products } = useProducts();
   const thisProduct = products.find((product) => product.id === id);
 
   const handleUpdateProduct = async () => {
@@ -24,10 +17,21 @@ export default function editPage() {
       return;
     }
     try {
+      // Ensure jumlahPembelian is a valid number before subtracting
+      const quantityToSubtract = parseInt(jumlahPembelian);
+      if (isNaN(quantityToSubtract)) {
+        alert("Please enter a valid number for Jumlah Pembelian.");
+        return;
+      }
+      if (thisProduct.total_stock < quantityToSubtract) {
+          alert("Not enough stock.");
+          return;
+      }
+
       await updateProduct(thisProduct.id, {
-        total_stock: thisProduct.total_stock - parseInt(jumlahPembelian),
+        total_stock: thisProduct.total_stock - quantityToSubtract,
       });
-      alert("berhasil");
+      alert("Berhasil!");
       // Product automatically updated in state
     } catch (error) {
       // Error handled in hook
@@ -38,6 +42,7 @@ export default function editPage() {
       }
     }
   };
+
   return (
     <div className="flex justify-center items-center h-screen">
       <input
@@ -48,7 +53,7 @@ export default function editPage() {
         onChange={(e) => setJumlahPembelian(e.target.value)}
         required
       />
-      <Button onClick={() => handleUpdateProduct()}>Edit Stock</Button>
+      <Button onClick={handleUpdateProduct}>Edit Stock</Button>
     </div>
   );
 }

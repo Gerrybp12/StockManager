@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
+import { User } from '@supabase/supabase-js'
 import { UserProfile } from '@/types/user'
 import { z } from 'zod'
 
@@ -95,13 +96,13 @@ export async function getCurrentUser() {
   }
 }
 
-export async function getProfile(): Promise<{ user: any; profile: UserProfile | null; error?: string }> {
+export async function getProfile(): Promise<{ user: User | null; profile: UserProfile | null; error?: string }> {
   const supabase = await createClient()
-  
+
   try {
     // Get current user
     const user = await getCurrentUser()
-    
+
     if (!user) {
       return { user: null, profile: null, error: 'User not authenticated' }
     }

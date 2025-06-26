@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react"; // Import useCallback
 import { createClient } from "@/utils/supabase/client";
 import { getProfile } from "@/app/login/actions";
 import { useNavigation } from "@/hooks/useNavigation";
@@ -31,11 +31,8 @@ export default function ProfilePage() {
   const supabase = createClient();
   const { navigateTo, isLoading, isAnyLoading } = useNavigation();
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
-  async function loadProfile() {
+  // Wrap loadProfile in useCallback
+  const loadProfile = useCallback(async () => {
     try {
       setLoading(true);
       setGlobalError(null);
@@ -58,7 +55,11 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [navigateTo]); // navigateTo is a dependency of loadProfile
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]); // Now include loadProfile in the dependency array
 
   async function signOut() {
     try {
@@ -94,7 +95,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       {/* Floating Back Button */}
-      <FloatingBackButton 
+      <FloatingBackButton
         disabled={isAnyLoading}
       />
 
@@ -206,9 +207,9 @@ export default function ProfilePage() {
                 <p className="text-gray-600 mb-6">
                   Unable to load your profile information.
                 </p>
-                <Button 
-                  onClick={loadProfile} 
-                  variant="outline" 
+                <Button
+                  onClick={loadProfile}
+                  variant="outline"
                   className="px-6"
                 >
                   Try Again

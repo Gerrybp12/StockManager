@@ -1,5 +1,4 @@
 import { CartProduct } from "@/types/cart";
-import { Product } from "@/types/product";
 import { useState } from "react";
 
 export const useCart = () => {

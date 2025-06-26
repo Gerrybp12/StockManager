@@ -68,7 +68,7 @@ export default function Home() {
         setAddProductOpen(false);
       }
     } catch (error) {
-      alert("An unexpected error occurred");
+      alert("An unexpected error occurred :" + error);
     } finally {
       setIsSubmitting(false);
     }

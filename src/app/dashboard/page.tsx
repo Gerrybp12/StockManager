@@ -10,6 +10,7 @@ import ProductFilters from "@/components/dashboard/ProductFilters";
 import ProductsTable from "@/components/dashboard/ProductsTable";
 
 const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
+  // All hooks must be called at the top level, unconditionally
   const {
     filteredProducts,
     loading,
@@ -25,6 +26,9 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
     updateProduct,
   } = useProducts();
 
+  // Global loading state - tracks if any operation is in progress
+  const [isAnyLoading, setIsAnyLoading] = React.useState(false); // <--- Moved here
+
   if (error) {
     return (
       <div className="container mx-auto p-6">
@@ -35,9 +39,6 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
       </div>
     );
   }
-
-  // Global loading state - tracks if any operation is in progress
-  const [isAnyLoading, setIsAnyLoading] = React.useState(false);
 
   // Wrapper for updateProduct with global loading state
   const handleUpdateProduct = async (id: number, updates: Partial<Product>) => {

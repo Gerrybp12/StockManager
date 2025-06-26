@@ -12,14 +12,6 @@ import { useCart } from "@/hooks/useCart";
 import { useNavigation } from "@/hooks/useNavigation";
 import { FloatingNavigation } from "@/components/ui/floating-buttons";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   formatCurrency,
   getProductColorDisplayName,
   getProductColorHex,

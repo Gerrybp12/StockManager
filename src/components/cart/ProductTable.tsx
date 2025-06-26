@@ -292,7 +292,8 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
             </TableHeader>
             <TableBody>
               {currentProducts.length === 0 ? (
-                <TableRow>
+                // Add a unique key here for the "No products found" row
+                <TableRow key="no-products-found">
                   <TableCell
                     colSpan={10}
                     className="h-24 text-center text-muted-foreground"
