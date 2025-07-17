@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, RefreshCcw } from "lucide-react";
-import { ProductsPageProps } from "@/types/product";
 import { useProducts } from "@/hooks/useProducts";
 import ProductFilters from "@/components/cart/ProductFilter";
 import ProductsTable from "@/components/cart/ProductTable";
@@ -20,7 +19,7 @@ import { CartProduct } from "@/types/cart";
 import { useParams } from "next/navigation";
 import { useLog } from "@/hooks/useLog";
 
-const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
+const ProductsPage: React.FC = () => {
   const params = useParams<{ role: string }>();
   const role = params.role;
   const { newLog } = useLog(false);

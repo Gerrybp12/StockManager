@@ -12,10 +12,8 @@ export interface Product {
   created_at: string;
 }
 
-export interface ProductsPageProps {
-  supabaseUrl?: string;
-  supabaseKey?: string;
-}
+// Remove the ProductsPageProps interface since it's not needed for Next.js page components
+// The component will use useParams() to get the role parameter
 
 export interface StockStatus {
   label: string;

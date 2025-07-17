@@ -3,13 +3,13 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { Product, ProductsPageProps } from "@/types/product";
+import { Product } from "@/types/product";
 import { useProducts } from "@/hooks/useProducts";
 import StatsCards from "@/components/dashboard/StatsCards";
 import ProductFilters from "@/components/dashboard/ProductFilters";
 import ProductsTable from "@/components/dashboard/ProductsTable";
 
-const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
+const ProductsPage: React.FC = () => {
   // All hooks must be called at the top level, unconditionally
   const {
     filteredProducts,
@@ -27,7 +27,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({}) => {
   } = useProducts();
 
   // Global loading state - tracks if any operation is in progress
-  const [isAnyLoading, setIsAnyLoading] = React.useState(false); // <--- Moved here
+  const [isAnyLoading, setIsAnyLoading] = React.useState(false);
 
   if (error) {
     return (
