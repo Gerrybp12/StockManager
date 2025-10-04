@@ -66,6 +66,7 @@ export default function Home() {
         setModal("");
         setColorSelected("burgundimaron");
         setAddProductOpen(false);
+        window.location.reload();
       }
     } catch (error) {
       alert("An unexpected error occurred :" + error);
@@ -217,7 +218,7 @@ export default function Home() {
                         type="number"
                         placeholder={
                           "Enter ID (" +
-                          (products.at(-1)?.product_id.substring(0, 5) ??
+                          (products.at(0)?.product_id.substring(0, 5) ??
                             "Produk pertama") +
                           ")"
                         }

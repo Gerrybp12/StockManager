@@ -302,7 +302,8 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                   </TableCell>
                 </TableRow>
               ) : (
-                currentProducts.map((product) => {
+                currentProducts.map((product, index) => {
+                  const uniqueKey = product.id || `${product.product_id}-${startIndex + index}`;
                   const tiktokStockDisplay = getStockDisplay(
                     product.tiktok_stock
                   );
@@ -312,9 +313,9 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                   const tokoStockDisplay = getStockDisplay(product.toko_stock);
 
                   return (
-                    <TableRow key={product.id}>
+                    <TableRow key={uniqueKey}>
                       <TableCell className="font-medium">
-                        RF{product.product_id}
+                        RF{product.id}
                       </TableCell>
                       <TableCell>{formatCurrency(product.price)}</TableCell>
                       {tiktok && (
