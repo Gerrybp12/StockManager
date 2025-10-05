@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import { FloatingNavigation } from "@/components/ui/floating-buttons";
 import { useLog } from "@/hooks/useLog";
-import { useProducts } from "@/hooks/useProducts";
 
 export default function Home() {
   const [addProductOpen, setAddProductOpen] = useState(false);
@@ -31,7 +30,6 @@ export default function Home() {
   const [id, setId] = useState("");
   const [idValid, setIdValid] = useState(false);
 
-  const { products } = useProducts();
   const supabase = createClient();
 
   // Fixed destructuring syntax
