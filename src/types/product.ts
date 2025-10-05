@@ -3,6 +3,7 @@
 export interface Product {
   id: number;
   product_id: string;
+  potongan: number;
   price: number;
   total_stock: number;
   tiktok_stock: number;

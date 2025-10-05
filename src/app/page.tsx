@@ -23,6 +23,7 @@ import { useProducts } from "@/hooks/useProducts";
 export default function Home() {
   const [addProductOpen, setAddProductOpen] = useState(false);
   const [price, setPrice] = useState("");
+  const [potongan, setPotongan] = useState("");
   const [stock, setStock] = useState("");
   const [modal, setModal] = useState("");
   const [colorSelected, setColorSelected] = useState("burgundimaron");
@@ -47,6 +48,7 @@ export default function Home() {
     try {
       const { error } = await supabase.from("products").insert({
         product_id: id + colorIndex,
+        potongan: potongan,
         price: parseFloat(price),
         total_stock: parseInt(stock),
         color: colorSelected,
@@ -217,10 +219,7 @@ export default function Home() {
                         id="id"
                         type="number"
                         placeholder={
-                          "Enter ID (" +
-                          (products.at(0)?.product_id.substring(0, 5) ??
-                            "Produk pertama") +
-                          ")"
+                          "Enter ID"
                         }
                         value={id}
                         onChange={(e) => {
@@ -228,6 +227,17 @@ export default function Home() {
                           if (e.target.value.length === 5) setIdValid(true);
                           else setIdValid(false);
                         }}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="price">Price</Label>
+                      <Input
+                        id="potongan"
+                        type="number"
+                        placeholder="Potongan ke-"
+                        value={potongan}
+                        onChange={(e) => setPotongan(e.target.value)}
                         required
                       />
                     </div>

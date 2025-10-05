@@ -178,6 +178,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
       const newTotalStock = addStockProduct.total_stock + addStockAmount;
       await updateProduct(addStockProduct.id as number, {
         total_stock: newTotalStock,
+        potongan: addStockProduct.potongan + 1,
       });
       newLog(
         "Penambahan stok",
@@ -299,6 +300,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
+                  <TableHead>Potongan</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead className="text-center">Total Stock</TableHead>
                   <TableHead className="text-center">TikTok</TableHead>
@@ -337,6 +339,9 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                       <TableRow key={uniqueKey}>
                         <TableCell className="font-medium">
                           RF{product.product_id}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {product.potongan}
                         </TableCell>
                         <TableCell>{formatCurrency(product.price)}</TableCell>
                         <TableCell className="text-center">
