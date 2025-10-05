@@ -59,7 +59,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     loadProfile();
-  }); // Now include loadProfile in the dependency array
+  }, []); // Now include loadProfile in the dependency array
 
   async function signOut() {
     try {
