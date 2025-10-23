@@ -42,6 +42,7 @@ interface ProductsTableProps {
   loading: boolean;
   addProduct: (
     id: string,
+    product_id: string,
     quantity: number,
     initial_stock: number,
     price: number,
@@ -113,6 +114,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
         if (jumlah <= stok) {
           addProduct(
             String(productDipilih.id),
+            productDipilih.product_id,
             jumlah,
             stock ?? 0,
             productDipilih.price,
@@ -307,15 +309,15 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                   const tiktokStockDisplay = getStockDisplay(
                     product.tiktok_stock
                   );
-                  const shopeeStockDisplay = getStockDisplay(
+                    const shopeeStockDisplay = getStockDisplay(
                     product.shopee_stock
-                  );
+                    );
                   const tokoStockDisplay = getStockDisplay(product.toko_stock);
 
                   return (
                     <TableRow key={uniqueKey}>
                       <TableCell className="font-medium">
-                        RF{product.id}
+                        {product.product_id}
                       </TableCell>
                       <TableCell>{formatCurrency(product.price)}</TableCell>
                       {tiktok && (

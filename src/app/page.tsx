@@ -22,13 +22,11 @@ import { useLog } from "@/hooks/useLog";
 export default function Home() {
   const [addProductOpen, setAddProductOpen] = useState(false);
   const [price, setPrice] = useState("");
-  const [potongan, setPotongan] = useState("");
   const [stock, setStock] = useState("");
   const [modal, setModal] = useState("");
   const [colorSelected, setColorSelected] = useState("burgundimaron");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [id, setId] = useState("");
-  const [idValid, setIdValid] = useState(false);
 
   const supabase = createClient();
 
@@ -45,8 +43,7 @@ export default function Home() {
     setIsSubmitting(true);
     try {
       const { error } = await supabase.from("products").insert({
-        product_id: id + colorIndex,
-        potongan: potongan,
+        product_id: id,
         price: parseFloat(price),
         total_stock: parseInt(stock),
         color: colorSelected,
@@ -222,20 +219,7 @@ export default function Home() {
                         value={id}
                         onChange={(e) => {
                           setId(e.target.value);
-                          if (e.target.value.length === 5) setIdValid(true);
-                          else setIdValid(false);
                         }}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="price">Price</Label>
-                      <Input
-                        id="potongan"
-                        type="number"
-                        placeholder="Potongan ke-"
-                        value={potongan}
-                        onChange={(e) => setPotongan(e.target.value)}
                         required
                       />
                     </div>
@@ -316,13 +300,12 @@ export default function Home() {
                     variant="outline"
                     onClick={() => {
                       setAddProductOpen(false);
-                      setIdValid(false);
                     }}
                     disabled={isSubmitting}
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={isSubmitting || !idValid}>
+                  <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? "Adding..." : "Add Product"}
                   </Button>
                 </div>

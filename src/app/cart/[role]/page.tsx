@@ -84,7 +84,7 @@ const ProductsPage: React.FC = () => {
 
         newLog(
           "Pembelian di " + role,
-          `Pengurangan stok ${role} produk ${cartProduct.id} dari ${
+          `Pengurangan stok ${role} produk ${cartProduct.product_id} dari ${
             cartProduct.initial_stock
           } menjadi ${cartProduct.initial_stock - cartProduct.quantity}`
         );
@@ -252,7 +252,7 @@ const ProductsPage: React.FC = () => {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-sm font-medium">
-                              #{cartProduct.id}
+                              #{cartProduct.product_id}
                             </span>
                             <div
                               className="w-3 h-3 rounded-full border"

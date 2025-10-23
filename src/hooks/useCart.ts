@@ -6,6 +6,7 @@ export const useCart = () => {
 
   const addProduct = (
     id: string,
+    product_id: string,
     quantity: number,
     initial_stock: number,
     price: number,
@@ -19,6 +20,7 @@ export const useCart = () => {
         id: id,
         price: price,
         color: color,
+        product_id: product_id,
       },
     ]);
   };
